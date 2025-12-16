@@ -31,7 +31,7 @@ jobs:
                     --exclude 'logs/*' \
                     --exclude 'public/uploads/*' \
                     -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/
+                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/weightloss_watch/
 
             - name: Deploy application on server
               uses: appleboy/ssh-action@v1.0.3
@@ -45,7 +45,7 @@ jobs:
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
                       nvm use 25
 
-                      cd ${{ secrets.DEPLOY_PATH }}
+                      cd /var/www/weightloss_watch
 
                       # Install dependencies (including devDependencies needed for build)
                       echo "📦 Installing dependencies..."
