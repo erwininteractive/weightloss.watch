@@ -1,0 +1,83 @@
+name: Deploy to Production
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch: # Allow manual deployment
+
+jobs:
+    deploy:
+        name: Deploy to Server
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup SSH
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+                  chmod 600 ~/.ssh/deploy_key
+                  ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Rsync files to server
+              run: |
+                  rsync -avz --delete \
+                    --filter=':- .gitignore' \
+                    --exclude '.git' \
+                    --exclude '.github' \
+                    --exclude '.env' \
+                    --exclude 'logs/*' \
+                    --exclude 'public/uploads/*' \
+                    -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
+            - name: Deploy application on server
+              uses: appleboy/ssh-action@v1.0.3
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      # Load nvm and use Node 25
+                      export NVM_DIR="$HOME/.nvm"
+                      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                      nvm use 25
+
+                      cd ${{ secrets.DEPLOY_PATH }}
+
+                      # Install dependencies (including devDependencies needed for build)
+                      echo "📦 Installing dependencies..."
+                      npm ci
+
+                      # Generate Prisma client (required - not in git)
+                      echo "🔧 Generating Prisma client..."
+                      npx prisma generate
+
+                      # Run database migrations (if any pending)
+                      echo "🗄️  Running database migrations..."
+                      npx prisma migrate deploy
+
+                      # Build application
+                      echo "🏗️  Building application..."
+                      npm run build
+
+                      # Ensure upload directories exist
+                      echo "📁 Ensuring upload directories exist..."
+                      mkdir -p public/uploads/avatars public/uploads/progress
+                      chmod 775 public/uploads public/uploads/avatars public/uploads/progress
+
+                      # Ensure logs directory exists
+                      mkdir -p logs
+
+                      # Restart application with PM2
+                      echo "🔄 Restarting application..."
+                      pm2 restart wlt || pm2 start ecosystem.config.js
+                      pm2 save
+
+                      echo "✅ Deployment complete!"
+
+            - name: Cleanup SSH
+              if: always()
+              run: rm -f ~/.ssh/deploy_key
