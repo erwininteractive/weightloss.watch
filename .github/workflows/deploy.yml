@@ -54,8 +54,8 @@ jobs:
                       mkdir -p logs
 
                       echo "RESTART NODE"
-                      .npm-global/bin/pm2 restart wlt || .npm-global/bin/pm2 start ecosystem.config.js
-                      .npm-global/bin/pm2 save
+                      ~/.npm-global/bin/pm2 restart wlt || ~/.npm-global/bin/pm2 start ecosystem.config.js
+                      ~/.npm-global/bin/pm2 save
             - name: Cleanup SSH
               if: always()
               run: rm -f ~/.ssh/deploy_key
