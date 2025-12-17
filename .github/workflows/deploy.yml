@@ -20,7 +20,7 @@ jobs:
               run: |
                   rsync -avz \
                     -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/weightloss_watch/
+                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrtes.DEPLOY_LOCATION }}
             - name: Deploy application on server
               uses: appleboy/ssh-action@v1.0.3
               with:
@@ -30,31 +30,17 @@ jobs:
                   script: |
                       export NVM_DIR="$HOME/.nvm"
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                      echo "USE NODE 25"
                       nvm use 25
-
-                      echo "MOVE TO WEB DIR"
-                      cd /var/www/weightloss_watch
-
-                      echo "BUILD DEPENDENCIES"
+                      cd ${{ DEPLOY_LOCATION }}
                       npm ci
-
-                      echo "GENERATE PRISMA CLIENT"
                       npx prisma generate
-
-                      echo "DEPLOY PRISMA MIGRATIONS"
                       npx prisma migrate deploy
-
-                      echo "BUILD APPLICATION"
                       npm run build
-
-                      echo "MAKE UPDLOAD DIRECTORIES"
                       mkdir -p public/uploads/avatars public/uploads/progress
                       chmod 775 public/uploads public/uploads/avatars public/uploads/progress
                       mkdir -p logs
-
-                      echo "RESTART NODE"
-                      ~/.npm-global/bin/pm2 restart wlt || ~/.npm-global/bin/pm2 start ecosystem.config.js
+                      ~/.npm-global/bin/pm2 restart ${{ secrets.APP_NAME }} --update-env \
+                      || ~/.npm-global/bin/pm2 start ecosystem.config.js --only ${{ secrets.APP_NAME }}
                       ~/.npm-global/bin/pm2 save
             - name: Cleanup SSH
               if: always()
