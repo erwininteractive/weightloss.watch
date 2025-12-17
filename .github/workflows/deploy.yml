@@ -24,7 +24,7 @@ jobs:
               run: |
                   rsync -avz \
                     -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrtes.DEPLOY_LOCATION }}
+                    ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_LOCATION }}
 
             - name: Deploy application on server
               uses: appleboy/ssh-action@v1.0.3
@@ -36,7 +36,7 @@ jobs:
                       export NVM_DIR="$HOME/.nvm"
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
                       nvm use 25
-                      cd ${{ DEPLOY_LOCATION }}
+                      cd ${{ secrets.DEPLOY_LOCATION }}
                       npm ci
                       npx prisma generate
                       npx prisma migrate deploy
