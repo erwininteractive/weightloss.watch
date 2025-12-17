@@ -1,26 +1,31 @@
 name: Deploy to Production
+
 on:
     push:
         branches: [main]
-    workflow_dispatch: # Allow manual deployment
+        workflow_dispatch: # Allow manual deployment
 jobs:
     deploy:
         name: Deploy to Server
         runs-on: ubuntu-latest
+
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+
             - name: Setup SSH
               run: |
                   mkdir -p ~/.ssh
                   echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
                   chmod 600 ~/.ssh/deploy_key
                   ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
             - name: Rsync files to server
               run: |
                   rsync -avz \
                     -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
                     ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrtes.DEPLOY_LOCATION }}
+
             - name: Deploy application on server
               uses: appleboy/ssh-action@v1.0.3
               with:
@@ -42,6 +47,7 @@ jobs:
                       ~/.npm-global/bin/pm2 restart ${{ secrets.APP_NAME }} --update-env \
                       || ~/.npm-global/bin/pm2 start ecosystem.config.js --only ${{ secrets.APP_NAME }}
                       ~/.npm-global/bin/pm2 save
+
             - name: Cleanup SSH
               if: always()
               run: rm -f ~/.ssh/deploy_key
