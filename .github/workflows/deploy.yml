@@ -28,18 +28,32 @@ jobs:
                   username: ${{ secrets.SERVER_USER }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
-                      # Load nvm and use Node 25
                       export NVM_DIR="$HOME/.nvm"
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                      echo "USE NODE 25"
                       nvm use 25
+
+                      echo "MOVE TO WEB DIR"
                       cd /var/www/weightloss_watch
+
+                      echo "BUILD DEPENDENCIES"
                       npm ci
+
+                      echo "GENERATE PRISMA CLIENT"
                       npx prisma generate
+
+                      echo "DEPLOY PRISMA MIGRATIONS"
                       npx prisma migrate deploy
+
+                      echo "BUILD APPLICATION"
                       npm run build
+
+                      echo "MAKE UPDLOAD DIRECTORIES"
                       mkdir -p public/uploads/avatars public/uploads/progress
                       chmod 775 public/uploads public/uploads/avatars public/uploads/progress
                       mkdir -p logs
+
+                      echo "RESTART NODE"
                       pm2 restart wlt || pm2 start ecosystem.config.js
                       pm2 save
             - name: Cleanup SSH
