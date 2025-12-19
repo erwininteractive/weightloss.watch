@@ -150,7 +150,7 @@ export class WebAuthController {
 			res.redirect(
 				"/login?success=" +
 					encodeURIComponent(
-						"Account created successfully! Please sign in.",
+						"Account created! Please check your email to verify your account before signing in.",
 					),
 			);
 		} catch (error) {
@@ -195,6 +195,103 @@ export class WebAuthController {
 					),
 			);
 		} catch (error) {
+			next(error);
+		}
+	}
+
+	/**
+	 * GET /verify-email
+	 * Handle email verification via token
+	 */
+	static async verifyEmail(
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const { token } = req.query;
+
+			if (!token || typeof token !== "string") {
+				res.redirect(
+					"/login?error=" +
+						encodeURIComponent("Invalid verification link"),
+				);
+				return;
+			}
+
+			await AuthService.verifyEmail(token);
+
+			res.redirect(
+				"/login?success=" +
+					encodeURIComponent(
+						"Email verified successfully! You can now sign in.",
+					),
+			);
+		} catch (error) {
+			if (error instanceof Error) {
+				res.redirect(
+					"/login?error=" + encodeURIComponent(error.message),
+				);
+				return;
+			}
+			next(error);
+		}
+	}
+
+	/**
+	 * GET /resend-verification
+	 * Render resend verification page
+	 */
+	static resendVerificationPage(
+		req: Request,
+		res: Response,
+		_next: NextFunction,
+	): void {
+		res.render("auth/resend-verification", {
+			title: "Resend Verification Email",
+			error: req.query.error || null,
+			success: req.query.success || null,
+		});
+	}
+
+	/**
+	 * POST /resend-verification
+	 * Handle resend verification email request
+	 */
+	static async resendVerificationSubmit(
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const errors = validationResult(req);
+			if (!errors.isEmpty()) {
+				res.render("auth/resend-verification", {
+					title: "Resend Verification Email",
+					error: errors.array()[0].msg,
+					success: null,
+				});
+				return;
+			}
+
+			const { email } = req.body;
+
+			await AuthService.resendVerificationEmail(email);
+
+			res.render("auth/resend-verification", {
+				title: "Resend Verification Email",
+				error: null,
+				success: "Verification email sent! Please check your inbox.",
+			});
+		} catch (error) {
+			if (error instanceof Error) {
+				res.render("auth/resend-verification", {
+					title: "Resend Verification Email",
+					error: error.message,
+					success: null,
+				});
+				return;
+			}
 			next(error);
 		}
 	}

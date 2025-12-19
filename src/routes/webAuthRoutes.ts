@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { body } from "express-validator";
 import { WebAuthController } from "../controllers/WebAuthController";
 import { AuthController } from "../controllers/AuthController";
 
@@ -18,6 +19,15 @@ router.post(
 	"/register",
 	AuthController.registerValidation,
 	WebAuthController.registerSubmit,
+);
+
+// Email Verification
+router.get("/verify-email", WebAuthController.verifyEmail);
+router.get("/resend-verification", WebAuthController.resendVerificationPage);
+router.post(
+	"/resend-verification",
+	[body("email").isEmail().withMessage("Please provide a valid email")],
+	WebAuthController.resendVerificationSubmit,
 );
 
 // Logout

@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { authConfig } from "../config/auth";
 import { JwtPayload, TokenPair, RegisterInput, SafeUser } from "../types/auth";
 import prisma from "./database";
+import { emailService } from "./email.service";
 
 export class AuthService {
 	/**
@@ -134,6 +135,13 @@ export class AuthService {
 		// Hash password
 		const passwordHash = await this.hashPassword(password);
 
+		// Generate email verification token
+		const emailVerificationToken = emailService.generateVerificationToken();
+		const emailVerificationExpires = new Date();
+		emailVerificationExpires.setHours(
+			emailVerificationExpires.getHours() + 24,
+		); // 24 hours
+
 		// Create user
 		const user = await prisma.user.create({
 			data: {
@@ -146,8 +154,22 @@ export class AuthService {
 				goalWeight: goalWeight || null,
 				height: height || null,
 				activityLevel: activityLevel || null,
+				emailVerificationToken,
+				emailVerificationExpires,
 			},
 		});
+
+		// Send verification email
+		try {
+			await emailService.sendVerificationEmail(
+				email,
+				username,
+				emailVerificationToken,
+			);
+		} catch (error) {
+			console.error("Failed to send verification email:", error);
+			// Don't fail registration if email sending fails
+		}
 
 		// Return user without password hash
 		const { passwordHash: _, ...safeUser } = user;
@@ -182,6 +204,13 @@ export class AuthService {
 
 		if (!isValidPassword) {
 			throw new Error("Invalid email or password");
+		}
+
+		// Check if email is verified
+		if (!user.emailVerified) {
+			throw new Error(
+				"Please verify your email address before signing in. Check your inbox or resend the verification email.",
+			);
 		}
 
 		// Build JWT payload and generate tokens
@@ -302,5 +331,83 @@ export class AuthService {
 			},
 		});
 		return result.count;
+	}
+
+	/**
+	 * Verify email using verification token
+	 */
+	static async verifyEmail(token: string): Promise<SafeUser> {
+		// Find user with this verification token
+		const user = await prisma.user.findUnique({
+			where: { emailVerificationToken: token },
+		});
+
+		if (!user) {
+			throw new Error("Invalid verification token");
+		}
+
+		if (user.emailVerified) {
+			throw new Error("Email already verified");
+		}
+
+		if (
+			!user.emailVerificationExpires ||
+			user.emailVerificationExpires < new Date()
+		) {
+			throw new Error("Verification token has expired");
+		}
+
+		// Mark email as verified and clear verification token
+		const updatedUser = await prisma.user.update({
+			where: { id: user.id },
+			data: {
+				emailVerified: true,
+				emailVerificationToken: null,
+				emailVerificationExpires: null,
+			},
+		});
+
+		const { passwordHash: _, ...safeUser } = updatedUser;
+		return safeUser;
+	}
+
+	/**
+	 * Resend email verification
+	 */
+	static async resendVerificationEmail(email: string): Promise<void> {
+		const user = await prisma.user.findUnique({
+			where: { email },
+		});
+
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		if (user.emailVerified) {
+			throw new Error("Email already verified");
+		}
+
+		// Generate new verification token
+		const emailVerificationToken = emailService.generateVerificationToken();
+		const emailVerificationExpires = new Date();
+		emailVerificationExpires.setHours(
+			emailVerificationExpires.getHours() + 24,
+		);
+
+		// Update user with new token
+		await prisma.user.update({
+			where: { id: user.id },
+			data: {
+				emailVerificationToken,
+				emailVerificationExpires,
+			},
+		});
+
+		// Send verification email
+		await emailService.sendVerificationEmail(
+			email,
+			user.username,
+			emailVerificationToken,
+		);
 	}
 }

@@ -105,6 +105,8 @@ model User {
 
 	// Account status
 	emailVerified     Boolean       @default(false)
+	emailVerificationToken String?   @unique
+	emailVerificationExpires DateTime?
 	isActive          Boolean       @default(true)
 	lastLoginAt       DateTime?
 
