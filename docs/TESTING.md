@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document provides comprehensive guidance for writing and running tests in the Weight Loss Tracker application.
+This document provides comprehensive guidance for writing and running tests in the WeighTogether application.
 
 ## Table of Contents
 

@@ -1,6 +1,6 @@
 # Tests
 
-This directory contains all test files for the Weight Loss Tracker application.
+This directory contains all test files for the WeighTogether application.
 
 ## Quick Start
 

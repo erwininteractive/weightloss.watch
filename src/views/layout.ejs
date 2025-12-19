@@ -3,19 +3,28 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title><%= typeof title !== 'undefined' ? title + ' | Weight Loss Watch' : 'Weight Loss Watch - Track Together. Transform Together.' %></title>
-	<meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Weight Loss Watch combines personal tracking with team accountability. Log your progress, join challenges, and celebrate milestones together.' %>">
+	<title><%= typeof title !== 'undefined' ? title + ' | WeighTogether' : 'WeighTogether - Track Together. Transform Together.' %></title>
+	<meta name="description" content="<%= typeof description !== 'undefined' ? description : 'WeighTogether combines personal tracking with team accountability. Log your progress, join challenges, and celebrate milestones together.' %>">
 	
 	<!-- Favicon -->
 	<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
 	<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 	
 	<!-- Open Graph -->
-	<meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | Weight Loss Watch' : 'Weight Loss Watch' %>">
-	<meta property="og:description" content="Track your weight. Build your team. Transform together.">
+	<meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | WeighTogether' : 'WeighTogether' %>">
+	<meta property="og:description" content="<%= typeof description !== 'undefined' ? description : 'Track your weight. Build your team. Transform together.' %>">
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="https://weightloss.watch">
 	<meta property="og:image" content="https://weightloss.watch/images/og-image.png">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	<meta property="og:site_name" content="WeighTogether">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title + ' | WeighTogether' : 'WeighTogether' %>">
+	<meta name="twitter:description" content="<%= typeof description !== 'undefined' ? description : 'Track your weight. Build your team. Transform together.' %>">
+	<meta name="twitter:image" content="https://weightloss.watch/images/og-image.png">
 	
 	<!-- Google Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,7 +80,7 @@
                             <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="85 15"/>
                             <path d="M14 22L18 18L22 21L26 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <span class="font-display font-bold text-lg hidden sm:inline">WeightLoss.Watch</span>
+                        <span class="font-display font-bold text-lg hidden sm:inline">WeighTogether</span>
                     </a>
                 </div>
 
@@ -213,7 +222,7 @@
     <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <%- body %>
     </div>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="/js/theme.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

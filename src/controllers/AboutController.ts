@@ -9,7 +9,7 @@ export class AboutController {
 		res.render("about/index", {
 			title: "About Us",
 			description:
-				"Learn about Weight Loss Watch - a community-driven platform for sustainable weight loss through tracking, teams, and accountability.",
+				"Learn about WeighTogether - a community-driven platform for sustainable weight loss through tracking, teams, and accountability.",
 		});
 	};
 }

@@ -1,4 +1,4 @@
-# Weight Loss Tracker - Quick Start Guide
+# WeighTogether - Quick Start Guide
 
 Get up and running in 5 minutes!
 

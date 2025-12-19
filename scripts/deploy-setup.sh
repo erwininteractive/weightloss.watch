@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Weight Loss Tracker - Server Setup Script
+# WeighTogether - Server Setup Script
 # This script helps set up the server for first-time deployment
 
 set -e  # Exit on any error
 
 echo "========================================="
-echo "Weight Loss Tracker - Server Setup"
+echo "WeighTogether - Server Setup"
 echo "========================================="
 echo ""
 

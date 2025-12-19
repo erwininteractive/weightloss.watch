@@ -1,4 +1,4 @@
-# Weight Loss Tracker - Technical Requirements
+# WeighTogether - Technical Requirements
 
 **Version:** 2.0
 **Last Updated:** 2025-12-04

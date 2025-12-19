@@ -1,7 +1,7 @@
 {
-	"name": "typescript-mvc-boilerplate",
+	"name": "weightogether",
 	"version": "1.0.0",
-	"description": "TypeScript MVC project with Express",
+	"description": "WeighTogether - Track your weight loss journey together with team accountability",
 	"main": "dist/server.js",
 	"scripts": {
 		"dev": "npm run css:watch & nodemon --watch src --ext ts --exec ts-node src/server.ts",

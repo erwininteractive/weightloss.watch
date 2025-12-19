@@ -118,11 +118,11 @@ export class PayPalService {
 						currency_code: currency,
 						value: amount.toFixed(2),
 					},
-					description: "Donation to Weight Loss Watch",
+					description: "Donation to WeighTogether",
 				},
 			],
 			application_context: {
-				brand_name: "Weight Loss Watch",
+				brand_name: "WeighTogether",
 				landing_page: "NO_PREFERENCE",
 				user_action: "PAY_NOW",
 				return_url: paypalConfig.returnUrl,
@@ -238,7 +238,7 @@ export class PayPalService {
 		const subscriptionPayload = {
 			plan_id: planId,
 			application_context: {
-				brand_name: "Weight Loss Watch",
+				brand_name: "WeighTogether",
 				locale: "en-US",
 				shipping_preference: "NO_SHIPPING",
 				user_action: "SUBSCRIBE_NOW",

@@ -22,7 +22,7 @@ export class HomeController {
 			}));
 
 			res.render("home/index", {
-				title: "Weight Loss Watch - Track Together, Transform Together",
+				title: "WeighTogether - Track Together, Transform Together",
 				featuredNews: newsWithFormattedDates,
 			});
 		} catch (error) {

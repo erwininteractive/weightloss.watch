@@ -1,4 +1,4 @@
-# Weight Loss Tracker
+# WeighTogether
 
 A full-featured weight loss tracking application with social features, built with TypeScript, Express, and PostgreSQL.
 
@@ -153,7 +153,7 @@ public/
 
 ## Contributing
 
-**We're actively looking for contributors!** Weight Loss Watch is a free and open source project, and we welcome contributions of all kinds.
+**We're actively looking for contributors!** WeighTogether is a free and open source project, and we welcome contributions of all kinds.
 
 ### Ways to Contribute
 

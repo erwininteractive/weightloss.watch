@@ -94,7 +94,7 @@ export class EmailService {
 					<!-- Header -->
 					<tr>
 						<td style="padding: 40px 30px; text-align: center; background-color: #4f46e5; border-radius: 8px 8px 0 0;">
-							<h1 style="margin: 0; color: #ffffff; font-size: 28px;">Weight Loss Tracker</h1>
+							<h1 style="margin: 0; color: #ffffff; font-size: 28px;">WeighTogether</h1>
 						</td>
 					</tr>
 
@@ -165,7 +165,7 @@ export class EmailService {
 					<!-- Header -->
 					<tr>
 						<td style="padding: 40px 30px; text-align: center; background-color: #4f46e5; border-radius: 8px 8px 0 0;">
-							<h1 style="margin: 0; color: #ffffff; font-size: 28px;">Weight Loss Tracker</h1>
+							<h1 style="margin: 0; color: #ffffff; font-size: 28px;">WeighTogether</h1>
 						</td>
 					</tr>
 

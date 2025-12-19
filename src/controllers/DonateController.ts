@@ -9,9 +9,9 @@ export class DonateController {
 	 */
 	public index = (_req: Request, res: Response): void => {
 		res.render("donate/index", {
-			title: "Support Weight Loss Watch",
+			title: "Support WeighTogether",
 			description:
-				"Help us keep Weight Loss Watch free and ad-free by making a donation.",
+				"Help us keep WeighTogether free and ad-free by making a donation.",
 			paypalClientId: paypalConfig.clientId,
 			suggestedAmounts: paypalConfig.donationAmounts.suggested,
 			defaultAmount: paypalConfig.donationAmounts.default,
@@ -97,7 +97,7 @@ export class DonateController {
 		res.render("donate/thank-you", {
 			title: "Thank You for Your Donation",
 			description:
-				"Your donation helps keep Weight Loss Watch free and ad-free.",
+				"Your donation helps keep WeighTogether free and ad-free.",
 			transactionId: finalTransactionId,
 			amount: formattedAmount,
 			rawAmount: amount,
