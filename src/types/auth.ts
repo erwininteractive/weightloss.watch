@@ -26,6 +26,7 @@ export interface RegisterInput {
 	username: string;
 	password: string;
 	displayName?: string;
+	dateOfBirth?: Date;
 	unitSystem?: "IMPERIAL" | "METRIC";
 	currentWeight?: number;
 	goalWeight?: number;

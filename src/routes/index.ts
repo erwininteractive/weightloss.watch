@@ -7,6 +7,7 @@ import profileRoutes from "./profileRoutes";
 import weightRoutes from "./weightRoutes";
 import teamRoutes from "./teamRoutes";
 import postRoutes from "./postRoutes";
+import challengeRoutes from "./challengeRoutes";
 import settingsRoutes from "./settingsRoutes";
 import resourcesRoutes from "./resourcesRoutes";
 import aboutRoutes from "./aboutRoutes";
@@ -40,6 +41,7 @@ router.use("/profile", profileRoutes);
 router.use("/progress", weightRoutes);
 router.use("/teams", teamRoutes);
 router.use("/", postRoutes); // Post and comment routes
+router.use("/", challengeRoutes); // Challenge routes
 router.use("/", settingsRoutes); // Settings routes
 
 // 404 handler

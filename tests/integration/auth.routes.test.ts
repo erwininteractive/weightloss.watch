@@ -22,7 +22,8 @@ describe("Auth Routes", () => {
 					username: "newuser",
 					password: "Password123",
 					displayName: "New User",
-					unitSystem: "IMPERIAL",
+				dateOfBirth: "1990-01-01",
+				unitSystem: "IMPERIAL",
 				})
 				.expect(201);
 
@@ -68,7 +69,8 @@ describe("Auth Routes", () => {
 					email: "existing@example.com",
 					username: "newuser",
 					password: "Password123",
-					unitSystem: "IMPERIAL",
+				dateOfBirth: "1990-01-01",
+				unitSystem: "IMPERIAL",
 				})
 				.expect(409);
 
@@ -85,7 +87,8 @@ describe("Auth Routes", () => {
 					email: "new@example.com",
 					username: "existinguser",
 					password: "Password123",
-					unitSystem: "IMPERIAL",
+				dateOfBirth: "1990-01-01",
+				unitSystem: "IMPERIAL",
 				})
 				.expect(409);
 
@@ -346,7 +349,8 @@ describe("Auth Routes", () => {
 						username: "newuser",
 						password: "Password123",
 						displayName: "New User",
-						unitSystem: "IMPERIAL",
+				dateOfBirth: "1990-01-01",
+				unitSystem: "IMPERIAL",
 					})
 					.expect(302);
 

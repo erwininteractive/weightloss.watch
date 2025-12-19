@@ -125,6 +125,7 @@ export class WebAuthController {
 				username,
 				password,
 				displayName,
+				dateOfBirth,
 				unitSystem,
 				height,
 				currentWeight,
@@ -137,6 +138,7 @@ export class WebAuthController {
 				username,
 				password,
 				displayName,
+				dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
 				unitSystem,
 				height: height ? parseFloat(height) : undefined,
 				currentWeight: currentWeight

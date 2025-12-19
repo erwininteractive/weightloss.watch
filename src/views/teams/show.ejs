@@ -224,8 +224,23 @@
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4">
                     <h3 class="font-semibold text-slate-800 dark:text-white">Actions</h3>
                     
+                    <a
+                        href="/teams/<%= team.id %>/challenges"
+                        class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <div class="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800 dark:text-gray-200">View Challenges</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Team competitions</p>
+                        </div>
+                    </a>
+
                     <% if (isAdmin) { %>
-                        <button 
+                        <button
                             @click="showInviteModal = true"
                             class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                         >

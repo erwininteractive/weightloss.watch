@@ -33,6 +33,23 @@ export class AuthController {
 			.optional()
 			.isLength({ min: 1, max: 100 })
 			.withMessage("Display name must be between 1 and 100 characters"),
+		body("dateOfBirth")
+			.notEmpty()
+			.withMessage("Date of birth is required")
+			.isISO8601()
+			.withMessage("Date of birth must be a valid date")
+			.custom((value) => {
+				const birthDate = new Date(value);
+				const today = new Date();
+				const age = today.getFullYear() - birthDate.getFullYear();
+				if (age < 13) {
+					throw new Error("You must be at least 13 years old to register");
+				}
+				if (age > 120) {
+					throw new Error("Please enter a valid date of birth");
+				}
+				return true;
+			}),
 		body("unitSystem")
 			.notEmpty()
 			.withMessage("Unit system is required")
