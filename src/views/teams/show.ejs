@@ -1,4 +1,48 @@
-<div class="space-y-6" x-data="{ showInviteModal: false, inviteCode: '<%= team.inviteCode %>', showNewPostModal: false, newPost: { type: 'GENERAL', content: '', title: '' } }">
+<div class="space-y-6" x-data="{
+	showInviteModal: false,
+	inviteCode: `<%= team.inviteCode %>`,
+	showNewPostModal: false,
+	newPost: { type: 'GENERAL', content: '', title: '' },
+	submitting: false,
+	async submitPost() {
+		if (!this.newPost.content.trim()) {
+			alert('Please enter post content');
+			return;
+		}
+
+		this.submitting = true;
+
+		try {
+			const response = await fetch(`/teams/<%= team.id %>/posts`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					type: this.newPost.type,
+					title: this.newPost.title || null,
+					content: this.newPost.content,
+				}),
+			});
+
+			if (response.redirected) {
+				window.location.href = response.url;
+			} else {
+				const data = await response.json();
+				if (data.success) {
+					window.location.reload();
+				} else {
+					alert(data.message || 'Failed to create post');
+					this.submitting = false;
+				}
+			}
+		} catch (error) {
+			console.error('Error creating post:', error);
+			alert('An error occurred while creating the post');
+			this.submitting = false;
+		}
+	}
+}">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-start gap-4">
         <a href="/teams" class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white sm:hidden">
@@ -364,7 +408,6 @@
             <% } %>
         </div>
     </div>
-</div>
 
 	<!-- New Post Modal -->
 	<div x-show="showNewPostModal"
@@ -383,7 +426,7 @@
 				</div>
 			</div>
 
-			<form id="newPostForm" class="p-6 space-y-4">
+			<form @submit.prevent="submitPost" class="p-6 space-y-4">
 				<!-- Post Type -->
 				<div>
 					<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -438,55 +481,13 @@
 						Cancel
 					</button>
 					<button
-						type="submit"
-						class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-						Post
-					</button>
+					type="submit"
+					:disabled="submitting"
+					class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+					<span x-text="submitting ? 'Posting...' : 'Post'"></span>
+				</button>
 				</div>
 			</form>
 		</div>
 	</div>
-
-	<script>
-	document.getElementById('newPostForm').addEventListener('submit', async function(e) {
-		e.preventDefault();
-
-		const form = e.target;
-		const submitButton = form.querySelector('button[type="submit"]');
-		submitButton.disabled = true;
-		submitButton.textContent = 'Posting...';
-
-		try {
-			const response = await fetch('/teams/<%= team.id %>/posts', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					type: document.querySelector('[x-model="newPost.type"]').value,
-					title: document.querySelector('[x-model="newPost.title"]').value || null,
-					content: document.querySelector('[x-model="newPost.content"]').value,
-				}),
-			});
-
-			if (response.redirected) {
-				window.location.href = response.url;
-			} else {
-				const data = await response.json();
-				if (data.success) {
-					window.location.reload();
-				} else {
-					alert(data.message || 'Failed to create post');
-					submitButton.disabled = false;
-					submitButton.textContent = 'Post';
-				}
-			}
-		} catch (error) {
-			console.error('Error creating post:', error);
-			alert('An error occurred while creating the post');
-			submitButton.disabled = false;
-			submitButton.textContent = 'Post';
-		}
-	});
-	</script>
 </div>
