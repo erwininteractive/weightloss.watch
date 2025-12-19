@@ -341,6 +341,45 @@ export class TeamController {
 				return;
 			}
 
+
+		// Fetch posts for the team feed (only for members)
+		let posts: any[] = [];
+		if (isMember) {
+			posts = await prisma.post.findMany({
+				where: {
+					teamId,
+					deletedAt: null,
+				},
+				include: {
+					author: {
+						select: {
+							id: true,
+							username: true,
+							displayName: true,
+							avatarUrl: true,
+						},
+					},
+					_count: {
+						select: {
+							comments: { where: { deletedAt: null } },
+							likes: true,
+						},
+					},
+					likes: {
+						where: { userId },
+						select: { id: true },
+					},
+				},
+				orderBy: { createdAt: "desc" },
+				take: 20, // Limit to most recent 20 posts
+			});
+
+			// Add isLiked property to each post
+			posts = posts.map((post) => ({
+				...post,
+				isLiked: post.likes.length > 0,
+			}));
+		}
 			res.render("teams/show", {
 				title: team.name,
 				user,
@@ -351,6 +390,8 @@ export class TeamController {
 				isAdmin,
 				isModerator,
 				roleOptions: ROLE_OPTIONS,
+				posts,
+				userRole: membership?.role || null,
 				success: req.query.success || null,
 				error: req.query.error || null,
 			});
