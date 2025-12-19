@@ -22,6 +22,7 @@ export async function createTestUser(
 			unitSystem: overrides.unitSystem || UnitSystem.IMPERIAL,
 			currentWeight: overrides.currentWeight || null,
 			goalWeight: overrides.goalWeight || null,
+			emailVerified: true, // Test users are pre-verified
 			...overrides,
 		},
 	});

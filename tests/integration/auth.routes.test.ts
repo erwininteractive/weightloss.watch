@@ -30,9 +30,8 @@ describe("Auth Routes", () => {
 			expect(response.body.data.user).toBeDefined();
 			expect(response.body.data.user.email).toBe("newuser@example.com");
 			expect(response.body.data.user.username).toBe("newuser");
-			expect(response.body.data.tokens).toBeDefined();
-			expect(response.body.data.tokens.accessToken).toBeDefined();
-			expect(response.body.data.tokens.refreshToken).toBeDefined();
+			expect(response.body.data.user.emailVerified).toBe(false);
+			expect(response.body.message).toContain("verify your email");
 		});
 
 		it("should return 400 for missing required fields", async () => {

@@ -102,25 +102,12 @@ export class AuthController {
 				displayName,
 			});
 
-			// Auto-login after registration
-			const { tokens } = await AuthService.login(email, password);
-
-			// Set refresh token as httpOnly cookie
-			res.cookie(
-				authConfig.cookie.refreshTokenName,
-				tokens.refreshToken,
-				authConfig.cookie.options,
-			);
-
 			res.status(201).json({
 				success: true,
-				message: "Registration successful",
+				message:
+					"Registration successful. Please verify your email before logging in.",
 				data: {
 					user,
-					tokens: {
-						accessToken: tokens.accessToken,
-						refreshToken: tokens.refreshToken,
-					},
 				},
 			});
 		} catch (error) {

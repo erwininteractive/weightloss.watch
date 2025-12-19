@@ -54,13 +54,22 @@ export async function resetDatabase() {
  */
 export async function setupTestDatabase() {
 	try {
-		// Push schema to test database
-		execSync("npx prisma db push", {
-			env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
-			stdio: "ignore",
+		// Generate Prisma client with latest schema
+		console.log("Generating Prisma client...");
+		execSync("npx prisma generate", {
+			stdio: "pipe",
 		});
+
+		// Push schema to test database with force reset
+		console.log("Pushing schema to test database...");
+		execSync("npx prisma db push --force-reset --accept-data-loss", {
+			env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
+			stdio: "pipe",
+		});
+
+		console.log("Test database setup complete!");
 	} catch (error) {
-		console.error("Failed to setup test database:", error);
+		console.error("Failed to setup test database");
 		throw error;
 	}
 }
