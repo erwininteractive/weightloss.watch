@@ -9,6 +9,7 @@ import teamRoutes from "./teamRoutes";
 import postRoutes from "./postRoutes";
 import challengeRoutes from "./challengeRoutes";
 import settingsRoutes from "./settingsRoutes";
+import adminRoutes from "./adminRoutes";
 import resourcesRoutes from "./resourcesRoutes";
 import aboutRoutes from "./aboutRoutes";
 import donateRoutes from "./donateRoutes";
@@ -43,6 +44,7 @@ router.use("/teams", teamRoutes);
 router.use("/", postRoutes); // Post and comment routes
 router.use("/", challengeRoutes); // Challenge routes
 router.use("/", settingsRoutes); // Settings routes
+router.use("/", adminRoutes); // Admin routes
 
 // 404 handler
 router.use((_req, res) => {

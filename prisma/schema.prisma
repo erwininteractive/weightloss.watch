@@ -108,6 +108,7 @@ model User {
 	emailVerificationToken String?   @unique
 	emailVerificationExpires DateTime?
 	isActive          Boolean       @default(true)
+	isAdmin           Boolean       @default(false)
 	lastLoginAt       DateTime?
 
 	// Timestamps
