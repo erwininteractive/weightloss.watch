@@ -119,10 +119,11 @@ export class AuthService {
 			activityLevel,
 		} = input;
 
-		// Check if user already exists
+		// Check if user already exists (exclude soft-deleted users)
 		const existingUser = await prisma.user.findFirst({
 			where: {
 				OR: [{ email }, { username }],
+				deletedAt: null,
 			},
 		});
 
@@ -185,9 +186,12 @@ export class AuthService {
 		email: string,
 		password: string,
 	): Promise<{ user: SafeUser; tokens: TokenPair }> {
-		// Find user by email
-		const user = await prisma.user.findUnique({
-			where: { email },
+		// Find user by email (exclude soft-deleted users)
+		const user = await prisma.user.findFirst({
+			where: {
+				email,
+				deletedAt: null,
+			},
 		});
 
 		if (!user) {
@@ -313,8 +317,11 @@ export class AuthService {
 	 * Get user by ID (without password hash)
 	 */
 	static async getUserById(userId: string): Promise<SafeUser | null> {
-		const user = await prisma.user.findUnique({
-			where: { id: userId },
+		const user = await prisma.user.findFirst({
+			where: {
+				id: userId,
+				deletedAt: null,
+			},
 		});
 
 		if (!user) return null;
