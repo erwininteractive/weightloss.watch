@@ -4,7 +4,6 @@
  * Usage: npm run create-admin <email>
  */
 
-import { AuthService } from '../src/services/auth.service';
 import prisma from '../src/services/database';
 
 async function createAdmin() {
