@@ -317,4 +317,48 @@ export class AdminController {
 			next(error);
 		}
 	}
+
+	/**
+	 * POST /admin/users/:userId/resend-verification
+	 * Resend verification email for a user
+	 */
+	static async resendVerification(
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const { userId } = req.params;
+
+			const user = await prisma.user.findFirst({
+				where: { id: userId, deletedAt: null },
+				select: { id: true, email: true, emailVerified: true, username: true },
+			});
+
+			if (!user) {
+				res.status(404).json({
+					success: false,
+					message: "User not found",
+				});
+				return;
+			}
+
+			if (user.emailVerified) {
+				res.status(400).json({
+					success: false,
+					message: "Email is already verified",
+				});
+				return;
+			}
+
+			await AuthService.resendVerificationEmail(user.email);
+
+			res.json({
+				success: true,
+				message: `Verification email sent to ${user.email}`,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 }

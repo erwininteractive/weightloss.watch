@@ -22,5 +22,9 @@ router.post(
 	"/admin/users/:userId/toggle-active",
 	AdminController.toggleActive,
 );
+router.post(
+	"/admin/users/:userId/resend-verification",
+	AdminController.resendVerification,
+);
 
 export default router;
