@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { emailService } from './src/services/email.service';
 
 async function testEmail() {

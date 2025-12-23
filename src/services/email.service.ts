@@ -27,9 +27,13 @@ export class EmailService {
 					user: process.env.SMTP_USER,
 					pass: process.env.SMTP_PASS,
 				} : undefined,
+				connectionTimeout: 10000, // 10 second connection timeout
+				greetingTimeout: 10000, // 10 second greeting timeout
+				socketTimeout: 30000, // 30 second socket timeout
 				tls: {
 					// Do not fail on invalid certs in development
 					rejectUnauthorized: process.env.NODE_ENV === "production",
+					minVersion: 'TLSv1.2',
 				},
 			});
 		}
@@ -74,6 +78,10 @@ export class EmailService {
 			}
 		} catch (error) {
 			console.error('❌ Failed to send verification email:', error);
+			if (error instanceof Error) {
+				console.error('   Error name:', error.name);
+				console.error('   Error message:', error.message);
+			}
 			throw new Error(`Failed to send verification email: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
 	}
@@ -110,6 +118,10 @@ export class EmailService {
 			}
 		} catch (error) {
 			console.error('❌ Failed to send password reset email:', error);
+			if (error instanceof Error) {
+				console.error('   Error name:', error.name);
+				console.error('   Error message:', error.message);
+			}
 			throw new Error(`Failed to send password reset email: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
 	}
