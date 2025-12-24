@@ -2,7 +2,7 @@
 
 A full-featured weight loss tracking application with social features, built with TypeScript, Express, and PostgreSQL.
 
-![Build Status](https://github.com/your-username/wlt/actions/workflows/deploy.yml/badge.svg)
+![Build Status](https://github.com/erwininteractive/weightloss.watch/actions/workflows/deploy.yml/badge.svg)
 
 ## Features
 
@@ -53,11 +53,11 @@ npm run db:seed
 npm run dev
 ```
 
-Visit **http://localhost:3000** in your browser!
+Visit **<http://localhost:3000>** in your browser!
 
 ### Test Login (After Seeding)
 
-- Email: john@example.com
+- Email: <john@example.com>
 - Password: Password123
 
 ## Tech Stack
