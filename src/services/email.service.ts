@@ -10,12 +10,14 @@ export class EmailService {
 
 		// In development, if SMTP is not configured, use a test account
 		if (this.isDevelopment && !process.env.SMTP_HOST) {
-			console.warn("⚠️  SMTP not configured. Emails will be logged to console only.");
+			console.warn(
+				"SMTP not configured. Emails will be logged to console only.",
+			);
 			// Create a fake transporter for development
 			this.transporter = nodemailer.createTransport({
 				streamTransport: true,
-				newline: 'unix',
-				buffer: true
+				newline: "unix",
+				buffer: true,
 			});
 		} else {
 			// Configure nodemailer with SMTP settings
@@ -23,17 +25,20 @@ export class EmailService {
 				host: process.env.SMTP_HOST || "localhost",
 				port: parseInt(process.env.SMTP_PORT || "587"),
 				secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
-				auth: process.env.SMTP_USER && process.env.SMTP_PASS ? {
-					user: process.env.SMTP_USER,
-					pass: process.env.SMTP_PASS,
-				} : undefined,
+				auth:
+					process.env.SMTP_USER && process.env.SMTP_PASS
+						? {
+								user: process.env.SMTP_USER,
+								pass: process.env.SMTP_PASS,
+							}
+						: undefined,
 				connectionTimeout: 10000, // 10 second connection timeout
 				greetingTimeout: 10000, // 10 second greeting timeout
 				socketTimeout: 30000, // 30 second socket timeout
 				tls: {
 					// Do not fail on invalid certs in development
 					rejectUnauthorized: process.env.NODE_ENV === "production",
-					minVersion: 'TLSv1.2',
+					minVersion: "TLSv1.2",
 				},
 			});
 		}
@@ -52,9 +57,9 @@ export class EmailService {
 	async sendVerificationEmail(
 		email: string,
 		username: string,
-		token: string
+		token: string,
 	): Promise<void> {
-		const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+		const verificationUrl = `${process.env.APP_URL || "http://localhost:3000"}/verify-email?token=${token}`;
 
 		const mailOptions = {
 			from: process.env.SMTP_FROM || "noreply@example.com",
@@ -68,21 +73,23 @@ export class EmailService {
 			const info = await this.transporter.sendMail(mailOptions);
 
 			if (this.isDevelopment) {
-				console.log('📧 Email sent (development mode)');
-				console.log('   To:', email);
-				console.log('   Subject:', mailOptions.subject);
-				console.log('   Verification URL:', verificationUrl);
+				console.log("Email sent (development mode)");
+				console.log("   To:", email);
+				console.log("   Subject:", mailOptions.subject);
+				console.log("   Verification URL:", verificationUrl);
 				if (info.messageId) {
-					console.log('   Message ID:', info.messageId);
+					console.log("   Message ID:", info.messageId);
 				}
 			}
 		} catch (error) {
-			console.error('❌ Failed to send verification email:', error);
+			console.error("Failed to send verification email:", error);
 			if (error instanceof Error) {
-				console.error('   Error name:', error.name);
-				console.error('   Error message:', error.message);
+				console.error("   Error name:", error.name);
+				console.error("   Error message:", error.message);
 			}
-			throw new Error(`Failed to send verification email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Failed to send verification email: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	}
 
@@ -92,9 +99,9 @@ export class EmailService {
 	async sendPasswordResetEmail(
 		email: string,
 		username: string,
-		token: string
+		token: string,
 	): Promise<void> {
-		const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+		const resetUrl = `${process.env.APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
 
 		const mailOptions = {
 			from: process.env.SMTP_FROM || "noreply@example.com",
@@ -108,21 +115,23 @@ export class EmailService {
 			const info = await this.transporter.sendMail(mailOptions);
 
 			if (this.isDevelopment) {
-				console.log('📧 Email sent (development mode)');
-				console.log('   To:', email);
-				console.log('   Subject:', mailOptions.subject);
-				console.log('   Reset URL:', resetUrl);
+				console.log("Email sent (development mode)");
+				console.log("   To:", email);
+				console.log("   Subject:", mailOptions.subject);
+				console.log("   Reset URL:", resetUrl);
 				if (info.messageId) {
-					console.log('   Message ID:', info.messageId);
+					console.log("   Message ID:", info.messageId);
 				}
 			}
 		} catch (error) {
-			console.error('❌ Failed to send password reset email:', error);
+			console.error("Failed to send password reset email:", error);
 			if (error instanceof Error) {
-				console.error('   Error name:', error.name);
-				console.error('   Error message:', error.message);
+				console.error("   Error name:", error.name);
+				console.error("   Error message:", error.message);
 			}
-			throw new Error(`Failed to send password reset email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Failed to send password reset email: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	}
 
@@ -131,7 +140,7 @@ export class EmailService {
 	 */
 	private getVerificationEmailTemplate(
 		username: string,
-		verificationUrl: string
+		verificationUrl: string,
 	): string {
 		return `
 <!DOCTYPE html>
@@ -202,7 +211,7 @@ export class EmailService {
 	 */
 	private getPasswordResetEmailTemplate(
 		username: string,
-		resetUrl: string
+		resetUrl: string,
 	): string {
 		return `
 <!DOCTYPE html>
@@ -274,10 +283,10 @@ export class EmailService {
 	async verifyConnection(): Promise<boolean> {
 		try {
 			await this.transporter.verify();
-			console.log('✓ SMTP connection verified successfully');
+			console.log("SMTP connection verified successfully");
 			return true;
 		} catch (error) {
-			console.error("❌ SMTP connection error:", error);
+			console.error("SMTP connection error:", error);
 			return false;
 		}
 	}

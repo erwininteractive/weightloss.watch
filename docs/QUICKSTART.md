@@ -34,25 +34,25 @@ npm run db:seed
 npm run dev
 ```
 
-Visit **http://localhost:3000** in your browser!
+Visit **<http://localhost:3000>** in your browser!
 
 ## Test Login Credentials (After Seeding)
 
-- **Email**: john@example.com | **Password**: Password123
-- **Email**: jane@example.com | **Password**: Password123
-- **Email**: mike@example.com | **Password**: Password123
+- **Email**: <john@example.com> | **Password**: Password123
+- **Email**: <jane@example.com> | **Password**: Password123
+- **Email**: <mike@example.com> | **Password**: Password123
 
 ## What You Get
 
 ### Features
 
-- ✅ User authentication (JWT with refresh tokens)
-- ✅ Weight tracking with charts
-- ✅ Profile management with avatar upload
-- ✅ Teams and social features
-- ✅ Challenges and achievements
-- ✅ Progress photos
-- ✅ Dark mode support
+- User authentication (JWT with refresh tokens)
+- Weight tracking with charts
+- Profile management with avatar upload
+- Teams and social features
+- Challenges and achievements
+- Progress photos
+- Dark mode support
 
 ### Tech Stack
 
@@ -66,6 +66,7 @@ Visit **http://localhost:3000** in your browser!
 ## Development Commands
 
 ### Database
+
 ```bash
 npm run db:start       # Start PostgreSQL container
 npm run db:stop        # Stop PostgreSQL container
@@ -76,6 +77,7 @@ npm run db:seed        # Seed with test data
 ```
 
 ### Application
+
 ```bash
 npm run dev            # Start with hot reload + CSS watch
 npm run dev:server     # Start server only (no CSS watch)
@@ -84,6 +86,7 @@ npm run css:build      # Build CSS once
 ```
 
 ### Testing
+
 ```bash
 npm test               # Run all tests
 npm run test:watch     # Run tests in watch mode
@@ -91,12 +94,14 @@ npm run test:coverage  # Generate coverage report
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint           # Run ESLint
 npm run format         # Format with Prettier
 ```
 
 ### Build
+
 ```bash
 npm run build          # Build for production
 npm start              # Run production build
@@ -156,9 +161,9 @@ public/
 ### Add Authentication to Route
 
 ```typescript
-import { webAuthenticate } from '../middleware/webAuth';
+import { webAuthenticate } from "../middleware/webAuth";
 
-router.get('/protected', webAuthenticate, Controller.method);
+router.get("/protected", webAuthenticate, Controller.method);
 ```
 
 ### Create a Form
@@ -190,12 +195,14 @@ JWT_REFRESH_SECRET="your-refresh-secret-here"
 ## Troubleshooting
 
 ### Port 3000 Already in Use
+
 ```bash
 # Find and kill the process
 lsof -ti:3000 | xargs kill -9
 ```
 
 ### Database Connection Error
+
 ```bash
 # Check if PostgreSQL is running
 docker ps | grep wlt-db-dev
@@ -205,6 +212,7 @@ npm run db:stop && npm run db:start
 ```
 
 ### Missing Dependencies
+
 ```bash
 # Clean install
 rm -rf node_modules package-lock.json
@@ -212,12 +220,14 @@ npm install
 ```
 
 ### CSS Not Building
+
 ```bash
 # Rebuild CSS
 npm run css:build
 ```
 
 ### Prisma Client Issues
+
 ```bash
 # Regenerate Prisma client
 npm run db:generate
@@ -225,11 +235,11 @@ npm run db:generate
 
 ## Next Steps
 
-1. ✅ Explore the codebase
-2. ✅ Review `CLAUDE.md` for development patterns
-3. ✅ Check `TESTING.md` for testing guide
-4. ✅ Read `docs/DEPLOYMENT.md` for production setup
-5. ✅ Customize the application for your needs!
+1. Explore the codebase
+2. Review `CLAUDE.md` for development patterns
+3. Check `TESTING.md` for testing guide
+4. Read `docs/DEPLOYMENT.md` for production setup
+5. Customize the application for your needs!
 
 ## Documentation
 
@@ -246,4 +256,4 @@ npm run db:generate
 - Test database connection
 - Verify environment variables
 
-Happy coding! 🚀
+Happy coding!
