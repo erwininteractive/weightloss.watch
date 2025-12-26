@@ -33,7 +33,6 @@ A full-featured weight loss tracking application with social features, built wit
 - **Authentication** - JWT-based auth with refresh tokens and email verification
 - **Password Reset** - Email-based password recovery
 - **Profile Management** - Customizable profiles with avatars and personal info
-- **Dark Mode** - System-aware theme support (light/dark/auto)
 - **Responsive Design** - Mobile-first design with TailwindCSS 4
 - **Birthday Tracking** - Optional birthday field for personalized experience
 

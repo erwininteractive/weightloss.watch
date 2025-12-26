@@ -119,3 +119,45 @@ export async function createAuthenticatedUser(overrides: Partial<User> = {}) {
 
 	return { user, tokens };
 }
+
+/**
+ * Factory for creating test achievements
+ */
+export async function createTestAchievement(
+	overrides: {
+		name?: string;
+		description?: string;
+		iconUrl?: string;
+		points?: number;
+	} = {},
+) {
+	const defaultName = `Test Achievement ${Date.now()}`;
+
+	return prisma.achievement.create({
+		data: {
+			name: overrides.name || defaultName,
+			description: overrides.description || "A test achievement",
+			iconUrl: overrides.iconUrl || "🏆",
+			points: overrides.points || 10,
+		},
+	});
+}
+
+/**
+ * Factory for awarding an achievement to a user
+ */
+export async function createTestUserAchievement(
+	userId: string,
+	achievementId: string,
+	overrides: {
+		unlockedAt?: Date;
+	} = {},
+) {
+	return prisma.userAchievement.create({
+		data: {
+			userId,
+			achievementId,
+			unlockedAt: overrides.unlockedAt || new Date(),
+		},
+	});
+}

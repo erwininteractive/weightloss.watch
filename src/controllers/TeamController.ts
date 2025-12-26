@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from "../types/auth";
 import prisma from "../services/database";
 import { TeamRole } from "@prisma/client";
 import crypto from "crypto";
+import { AchievementService } from "../services/achievement.service";
 
 // Role options for display
 export const ROLE_OPTIONS = [
@@ -657,6 +658,14 @@ export class TeamController {
 				},
 			});
 
+			// Check for achievement unlocks
+			try {
+				await AchievementService.checkEngagementAchievements(userId);
+			} catch (error) {
+				// Log error but don't fail the request
+				console.error("Error checking achievements:", error);
+			}
+
 			res.redirect(
 				`/teams/${teamId}?success=` +
 					encodeURIComponent("You have joined the team!"),
@@ -813,6 +822,14 @@ export class TeamController {
 					role: TeamRole.MEMBER,
 				},
 			});
+
+			// Check for achievement unlocks
+			try {
+				await AchievementService.checkEngagementAchievements(userId);
+			} catch (error) {
+				// Log error but don't fail the request
+				console.error("Error checking achievements:", error);
+			}
 
 			res.redirect(
 				`/teams/${team.id}?success=` +

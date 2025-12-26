@@ -44,10 +44,10 @@
         <div class="px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <div class="flex-shrink-0">
+                <div class="shrink-0">
                     <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <img class="h-8" src="/images/weightogether_logo.png" />
-                        <img class="h-8" src="/images/weightogether_banner.png" />
+                        <img class="h-8 hidden sm:block" src="/images/weightogether_banner.png" />
                     </a>
                 </div>
 
@@ -60,6 +60,12 @@
                     <% if (typeof user !== 'undefined' && user) { %>
                         <a href="/dashboard" class="text-slate-600 hover:text-teal-600 transition-colors font-medium">Dashboard</a>
                         <a href="/teams" class="text-slate-600 hover:text-teal-600 transition-colors font-medium">Teams</a>
+                        <a href="/achievements" class="text-slate-600 hover:text-teal-600 transition-colors flex items-center gap-1 font-medium">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            Achievements
+                        </a>
                         <% if (user.isAdmin) { %>
                             <a href="/admin/users" class="text-slate-600 hover:text-purple-600 transition-colors flex items-center gap-1 font-medium">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -129,6 +135,12 @@
                 <% if (typeof user !== 'undefined' && user) { %>
                     <a href="/dashboard" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Dashboard</a>
                     <a href="/teams" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Teams</a>
+                    <a href="/achievements" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                        Achievements
+                    </a>
                     <% if (user.isAdmin) { %>
                         <a href="/admin/users" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors flex items-center gap-2">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

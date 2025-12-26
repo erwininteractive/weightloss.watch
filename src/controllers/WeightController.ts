@@ -5,6 +5,7 @@ import prisma from "../services/database";
 import { EntryVisibility } from "@prisma/client";
 import fs from "fs";
 import path from "path";
+import { AchievementService } from "../services/achievement.service";
 
 // Visibility options
 export const VISIBILITY_OPTIONS = [
@@ -328,6 +329,18 @@ export class WeightController {
 					where: { id: userId },
 					data: { currentWeight: latestEntry.weight },
 				});
+			}
+
+			// Check for achievement unlocks (only for new entries, not updates)
+			if (!entryId) {
+				try {
+					await AchievementService.checkWeightAchievements(userId);
+					await AchievementService.checkStreakAchievements(userId);
+					await AchievementService.checkEngagementAchievements(userId);
+				} catch (error) {
+					// Log error but don't fail the request
+					console.error("Error checking achievements:", error);
+				}
 			}
 
 			res.redirect(

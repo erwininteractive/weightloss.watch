@@ -8,6 +8,8 @@ import weightRoutes from "./weightRoutes";
 import teamRoutes from "./teamRoutes";
 import postRoutes from "./postRoutes";
 import challengeRoutes from "./challengeRoutes";
+import achievementRoutes from "./achievementRoutes";
+import achievementApiRoutes from "./achievementApiRoutes";
 import settingsRoutes from "./settingsRoutes";
 import adminRoutes from "./adminRoutes";
 import resourcesRoutes from "./resourcesRoutes";
@@ -31,6 +33,7 @@ router.use("/", donateRoutes); // Donate routes (public)
 router.use("/", newsRoutes); // News routes (public)
 router.use("/", contributeRoutes); // Contribute routes (public)
 router.use("/api/auth", authRoutes); // API auth endpoints (JSON)
+router.use("/achievements/api", achievementApiRoutes); // Achievement API endpoints
 router.post(
 	"/api/settings/theme",
 	authenticate,
@@ -43,6 +46,7 @@ router.use("/progress", weightRoutes);
 router.use("/teams", teamRoutes);
 router.use("/", postRoutes); // Post and comment routes
 router.use("/", challengeRoutes); // Challenge routes
+router.use("/achievements", achievementRoutes); // Achievement routes
 router.use("/", settingsRoutes); // Settings routes
 router.use("/", adminRoutes); // Admin routes
 

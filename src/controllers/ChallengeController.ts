@@ -3,6 +3,7 @@ import { validationResult, body } from "express-validator";
 import { AuthenticatedRequest } from "../types/auth";
 import prisma from "../services/database";
 import { ChallengeType, ChallengeStatus } from "@prisma/client";
+import { AchievementService } from "../services/achievement.service";
 
 /**
  * Controller for team challenge management
@@ -419,6 +420,14 @@ export class ChallengeController {
 					progress: 0,
 				},
 			});
+
+			// Check for achievement unlocks
+			try {
+				await AchievementService.checkEngagementAchievements(userId);
+			} catch (error) {
+				// Log error but don't fail the request
+				console.error("Error checking achievements:", error);
+			}
 
 			res.json({
 				success: true,

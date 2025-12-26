@@ -3,6 +3,7 @@ import { validationResult, body } from "express-validator";
 import { AuthenticatedRequest } from "../types/auth";
 import prisma from "../services/database";
 import { PostType } from "@prisma/client";
+import { AchievementService } from "../services/achievement.service";
 
 /**
  * Controller for post management (social features)
@@ -189,6 +190,14 @@ export class PostController {
 					tags: tags ? (Array.isArray(tags) ? tags : [tags]) : [],
 				},
 			});
+
+			// Check for achievement unlocks
+			try {
+				await AchievementService.checkEngagementAchievements(userId);
+			} catch (error) {
+				// Log error but don't fail the request
+				console.error("Error checking achievements:", error);
+			}
 
 			// Redirect back to team feed on success
 			res.redirect(`/teams/${teamId}?success=Post created successfully`);
