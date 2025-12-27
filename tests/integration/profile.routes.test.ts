@@ -67,9 +67,11 @@ describe("Profile Routes", () => {
 					profilePublic: "true",
 					weightVisible: "true",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("Profile updated successfully");
+			expect(response.headers.location).toContain("/profile/edit");
+
+			
 
 			const updatedUser = await prisma.user.findUnique({
 				where: { id: user.id },
@@ -105,7 +107,7 @@ describe("Profile Routes", () => {
 					profilePublic: "false",
 					weightVisible: "false",
 				})
-				.expect(200);
+				.expect(302);
 
 			const updatedUser = await prisma.user.findUnique({
 				where: { id: user.id },
@@ -127,9 +129,10 @@ describe("Profile Routes", () => {
 					displayName: longName,
 					unitSystem: "IMPERIAL",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("must be less than 100 characters");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate bio length", async () => {
@@ -144,9 +147,10 @@ describe("Profile Routes", () => {
 					bio: longBio,
 					unitSystem: "IMPERIAL",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("must be less than 500 characters");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate unit system", async () => {
@@ -158,9 +162,10 @@ describe("Profile Routes", () => {
 				.send({
 					unitSystem: "INVALID",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("Invalid unit system");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate current weight range", async () => {
@@ -173,9 +178,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					currentWeight: "1001", // Too high
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("must be between 0 and 1000");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate goal weight range", async () => {
@@ -188,9 +194,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					goalWeight: "-10", // Negative
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("must be between 0 and 1000");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate height range", async () => {
@@ -203,9 +210,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					height: "301", // Too high
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("must be between 0 and 300");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate gender value", async () => {
@@ -218,9 +226,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					gender: "INVALID",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("Invalid gender");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate activity level value", async () => {
@@ -233,9 +242,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					activityLevel: "INVALID",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("Invalid activity level");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate date of birth format", async () => {
@@ -248,9 +258,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					dateOfBirth: "invalid-date",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("Invalid date of birth");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should validate target date format", async () => {
@@ -263,9 +274,10 @@ describe("Profile Routes", () => {
 					unitSystem: "IMPERIAL",
 					targetDate: "invalid-date",
 				})
-				.expect(200);
+				.expect(302);
 
-			expect(response.text).toContain("Invalid target date");
+			expect(response.headers.location).toContain("/profile/edit");
+			expect(response.headers.location).toContain("error=");
 		});
 
 		it("should accept valid dates", async () => {
@@ -279,7 +291,7 @@ describe("Profile Routes", () => {
 					dateOfBirth: "1990-01-01",
 					targetDate: "2025-12-31",
 				})
-				.expect(200);
+				.expect(302);
 
 			const updatedUser = await prisma.user.findUnique({
 				where: { id: user.id },

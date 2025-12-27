@@ -368,10 +368,11 @@ describe("Auth Routes", () => {
 						password: "Password123",
 						unitSystem: "IMPERIAL",
 					})
-					.expect(200); // Renders the page, not redirect
+					.expect(302); // Redirects with error toast
 
-				// Should render the register page with errors
-				expect(response.text).toContain("Create Account");
+				// Should redirect to register page with error
+				expect(response.headers.location).toContain("/register");
+				expect(response.headers.location).toContain("error=");
 			});
 		});
 
@@ -391,7 +392,8 @@ describe("Auth Routes", () => {
 					})
 					.expect(302);
 
-				expect(response.headers.location).toBe("/dashboard");
+				expect(response.headers.location).toContain("/dashboard");
+				expect(response.headers.location).toContain("success=");
 				expect(response.headers["set-cookie"]).toBeDefined();
 			});
 
@@ -402,11 +404,11 @@ describe("Auth Routes", () => {
 						email: "nonexistent@example.com",
 						password: "Password123",
 					})
-					.expect(200); // Renders the page, not redirect
+					.expect(302); // Redirects with error toast
 
-				// Should render the login page with error message
-				expect(response.text).toContain("Sign In");
-				expect(response.text).toContain("Invalid");
+				// Should redirect to login page with error
+				expect(response.headers.location).toContain("/login");
+				expect(response.headers.location).toContain("error=");
 			});
 		});
 
