@@ -17,6 +17,7 @@ import aboutRoutes from "./aboutRoutes";
 import donateRoutes from "./donateRoutes";
 import newsRoutes from "./newsRoutes";
 import contributeRoutes from "./contributeRoutes";
+import toastDemoRoutes from "./toastDemoRoutes";
 import { SettingsController } from "../controllers/SettingsController";
 import { WeightController } from "../controllers/WeightController";
 import { authenticate } from "../middleware/auth";
@@ -32,6 +33,7 @@ router.use("/", resourcesRoutes); // Resources routes (public)
 router.use("/", donateRoutes); // Donate routes (public)
 router.use("/", newsRoutes); // News routes (public)
 router.use("/", contributeRoutes); // Contribute routes (public)
+router.use("/toast-demo", toastDemoRoutes); // Toast demo page
 router.use("/api/auth", authRoutes); // API auth endpoints (JSON)
 router.use("/achievements/api", achievementApiRoutes); // Achievement API endpoints
 router.post(

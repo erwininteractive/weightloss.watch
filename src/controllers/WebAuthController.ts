@@ -37,17 +37,15 @@ export class WebAuthController {
 		try {
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
-				res.render("auth/login", {
-					title: "Sign In",
-					error: errors.array()[0].msg,
-					success: null,
-				});
+				res.redirect(
+					"/login?error=" + encodeURIComponent(errors.array()[0].msg),
+				);
 				return;
 			}
 
 			const { email, password } = req.body;
 
-			const { tokens } = await AuthService.login(email, password);
+			const { tokens, user } = await AuthService.login(email, password);
 
 			// Set refresh token as httpOnly cookie
 			res.cookie(
@@ -63,15 +61,16 @@ export class WebAuthController {
 				maxAge: 15 * 60 * 1000, // 15 minutes
 			});
 
-			// Redirect to dashboard
-			res.redirect("/dashboard");
+			// Redirect to dashboard with success message
+			res.redirect(
+				"/dashboard?success=" +
+					encodeURIComponent(`Welcome back, ${user.displayName || user.username}!`),
+			);
 		} catch (error) {
 			if (error instanceof Error) {
-				res.render("auth/login", {
-					title: "Sign In",
-					error: error.message,
-					success: null,
-				});
+				res.redirect(
+					"/login?error=" + encodeURIComponent(error.message),
+				);
 				return;
 			}
 			next(error);
@@ -112,11 +111,10 @@ export class WebAuthController {
 		try {
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
-				res.render("auth/register", {
-					title: "Create Account",
-					errors: errors.array(),
-					formData: req.body,
-				});
+				res.redirect(
+					"/register?error=" +
+						encodeURIComponent(errors.array()[0].msg),
+				);
 				return;
 			}
 
@@ -152,16 +150,14 @@ export class WebAuthController {
 			res.redirect(
 				"/login?success=" +
 					encodeURIComponent(
-						"Account created! Please check your email to verify your account before signing in.",
+						"Account created successfully! You can now sign in.",
 					),
 			);
 		} catch (error) {
 			if (error instanceof Error) {
-				res.render("auth/register", {
-					title: "Create Account",
-					errors: [{ msg: error.message }],
-					formData: req.body,
-				});
+				res.redirect(
+					"/register?error=" + encodeURIComponent(error.message),
+				);
 				return;
 			}
 			next(error);
@@ -268,11 +264,10 @@ export class WebAuthController {
 		try {
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
-				res.render("auth/resend-verification", {
-					title: "Resend Verification Email",
-					error: errors.array()[0].msg,
-					success: null,
-				});
+				res.redirect(
+					"/resend-verification?error=" +
+						encodeURIComponent(errors.array()[0].msg),
+				);
 				return;
 			}
 
@@ -280,18 +275,18 @@ export class WebAuthController {
 
 			await AuthService.resendVerificationEmail(email);
 
-			res.render("auth/resend-verification", {
-				title: "Resend Verification Email",
-				error: null,
-				success: "Verification email sent! Please check your inbox.",
-			});
+			res.redirect(
+				"/resend-verification?success=" +
+					encodeURIComponent(
+						"Verification email sent! Please check your inbox.",
+					),
+			);
 		} catch (error) {
 			if (error instanceof Error) {
-				res.render("auth/resend-verification", {
-					title: "Resend Verification Email",
-					error: error.message,
-					success: null,
-				});
+				res.redirect(
+					"/resend-verification?error=" +
+						encodeURIComponent(error.message),
+				);
 				return;
 			}
 			next(error);

@@ -130,16 +130,11 @@ export class SettingsController {
 			const errors = validationResult(req);
 
 			if (!errors.isEmpty()) {
-				res.render("settings/index", {
-					title: "Settings",
-					user,
-					themeOptions: THEME_OPTIONS,
-					unitSystems: UNIT_SYSTEMS,
-					errors: errors.array(),
-					success: null,
-					error: null,
-					section: "preferences",
-				});
+				res.redirect(
+					"/settings?error=" +
+						encodeURIComponent(errors.array()[0].msg) +
+						"&section=preferences",
+				);
 				return;
 			}
 
@@ -196,16 +191,11 @@ export class SettingsController {
 			const errors = validationResult(req);
 
 			if (!errors.isEmpty()) {
-				res.render("settings/index", {
-					title: "Settings",
-					user,
-					themeOptions: THEME_OPTIONS,
-					unitSystems: UNIT_SYSTEMS,
-					errors: errors.array(),
-					success: null,
-					error: null,
-					section: "security",
-				});
+				res.redirect(
+					"/settings?error=" +
+						encodeURIComponent(errors.array()[0].msg) +
+						"&section=security",
+				);
 				return;
 			}
 
@@ -218,16 +208,11 @@ export class SettingsController {
 			);
 
 			if (!isValid) {
-				res.render("settings/index", {
-					title: "Settings",
-					user,
-					themeOptions: THEME_OPTIONS,
-					unitSystems: UNIT_SYSTEMS,
-					errors: [{ msg: "Current password is incorrect" }],
-					success: null,
-					error: null,
-					section: "security",
-				});
+				res.redirect(
+					"/settings?error=" +
+						encodeURIComponent("Current password is incorrect") +
+						"&section=security",
+				);
 				return;
 			}
 

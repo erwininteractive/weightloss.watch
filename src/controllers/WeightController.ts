@@ -332,25 +332,45 @@ export class WeightController {
 			}
 
 			// Check for achievement unlocks (only for new entries, not updates)
+			const unlockedAchievements: any[] = [];
 			if (!entryId) {
 				try {
-					await AchievementService.checkWeightAchievements(userId);
-					await AchievementService.checkStreakAchievements(userId);
-					await AchievementService.checkEngagementAchievements(userId);
+					const weightAchievements =
+						await AchievementService.checkWeightAchievements(userId);
+					const streakAchievements =
+						await AchievementService.checkStreakAchievements(userId);
+					const engagementAchievements =
+						await AchievementService.checkEngagementAchievements(userId);
+
+					unlockedAchievements.push(
+						...weightAchievements,
+						...streakAchievements,
+						...engagementAchievements,
+					);
 				} catch (error) {
 					// Log error but don't fail the request
 					console.error("Error checking achievements:", error);
 				}
 			}
 
-			res.redirect(
+
+			// Build redirect URL with success message and achievements
+			let redirectUrl =
 				"/progress?success=" +
-					encodeURIComponent(
-						entryId
-							? "Entry updated successfully!"
-							: "Weight logged successfully!",
-					),
-			);
+				encodeURIComponent(
+					entryId
+						? "Entry updated successfully!"
+						: "Weight logged successfully!",
+				);
+
+			// Add achievements to redirect if any were unlocked
+			if (unlockedAchievements.length > 0) {
+				redirectUrl +=
+					"&achievements=" +
+					encodeURIComponent(JSON.stringify(unlockedAchievements));
+			}
+
+			res.redirect(redirectUrl);
 		} catch (error) {
 			next(error);
 		}

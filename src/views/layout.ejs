@@ -47,12 +47,12 @@
                 <div class="shrink-0">
                     <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <img class="h-8" src="/images/weightogether_logo.png" />
-                        <img class="h-8 hidden sm:block" src="/images/weightogether_banner.png" />
+                        <img class="h-8 hidden xl:block" src="/images/weightogether_banner.png" />
                     </a>
                 </div>
 
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex md:items-center md:gap-6">
+                <div class="hidden 2xl:flex 2xl:items-center 2xl:gap-6">
                     <a href="/about" class="text-slate-600 hover:text-teal-600 transition-colors font-medium">About</a>
                     <a href="/resources" class="text-slate-600 hover:text-teal-600 transition-colors font-medium">Resources</a>
                     <a href="/donate" class="text-slate-600 hover:text-pink-600 transition-colors flex items-center gap-1 font-medium"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>Donate</a>
@@ -78,7 +78,7 @@
                 </div>
 
                 <!-- Desktop Right Section -->
-                <div class="hidden md:flex md:items-center md:gap-4">
+                <div class="hidden 2xl:flex 2xl:items-center 2xl:gap-4">
                     <% if (typeof user !== 'undefined' && user) { %>
                         <!-- User Dropdown -->
                         <div class="relative" x-data="{ open: false }">
@@ -108,7 +108,7 @@
                 </div>
 
                 <!-- Mobile Menu Button -->
-                <div class="flex items-center gap-2 md:hidden">
+                <div class="flex items-center gap-2 2xl:hidden">
                     <!-- Hamburger Menu Button -->
                     <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-teal-600 transition-colors" aria-label="Toggle menu">
                         <!-- Hamburger Icon -->
@@ -125,24 +125,24 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div x-show="mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" class="md:hidden border-t border-slate-200 bg-slate-50">
+        <div x-show="mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" class="lg:hidden border-t border-slate-200 bg-slate-50">
             <div class="px-4 py-3 space-y-1">
                 <!-- Navigation Links -->
                 <a href="/about" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">About</a>
                 <a href="/resources" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Resources</a>
-                <a href="/donate" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-pink-50 hover:text-pink-600 transition-colors flex items-center gap-2"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>Donate</a>
-                <a href="/contribute" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors flex items-center gap-2"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>Contribute</a>
+                <a href="/donate" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-pink-50 hover:text-pink-600 transition-colors flex items-center gap-2"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>Donate</a>
+                <a href="/contribute" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors flex items-center gap-2"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>Contribute</a>
                 <% if (typeof user !== 'undefined' && user) { %>
                     <a href="/dashboard" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Dashboard</a>
                     <a href="/teams" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Teams</a>
-                    <a href="/achievements" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2">
+                    <a href="/achievements" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                         </svg>
                         Achievements
                     </a>
                     <% if (user.isAdmin) { %>
-                        <a href="/admin/users" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors flex items-center gap-2">
+                        <a href="/admin/users" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors flex items-center gap-2">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                             </svg>
@@ -183,6 +183,370 @@
     <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <%- body %>
     </div>
+
+    <!-- Achievement Celebration Modal -->
+    <div x-data="achievementCelebration()" x-show="currentAchievement" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" x-cloak>
+        <div
+            x-show="currentAchievement"
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 scale-75"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-75"
+            class="relative max-w-md w-full mx-4"
+        >
+            <div class="bg-linear-to-br from-yellow-50 to-amber-50 rounded-2xl shadow-2xl border-4 border-yellow-400 p-8 text-center">
+                <!-- Trophy Icon -->
+                <div class="flex justify-center mb-4">
+                    <div class="bg-linear-to-br from-yellow-400 to-amber-500 rounded-full p-6 shadow-lg transform hover:scale-110 transition-transform duration-300">
+                        <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Achievement Title -->
+                <h2 class="text-3xl font-bold text-amber-900 mb-2">Achievement Unlocked!</h2>
+
+                <!-- Achievement Name -->
+                <div class="text-2xl font-bold text-amber-700 mb-2" x-text="currentAchievement?.name"></div>
+
+                <!-- Achievement Description -->
+                <p class="text-amber-800 mb-4" x-text="currentAchievement?.description"></p>
+
+                <!-- Points Badge -->
+                <div class="inline-flex items-center gap-2 bg-amber-500 text-white px-6 py-2 rounded-full font-bold text-lg shadow-lg mb-6">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    <span x-text="currentAchievement?.points + ' Points'"></span>
+                </div>
+
+                <!-- Close Button -->
+                <button
+                    @click="closeAchievement()"
+                    class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg"
+                >
+                    Awesome!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50" width="1920" height="1080"></canvas>
+
+    <!-- Toast Notifications Container -->
+    <div x-data="toastManager()" class="fixed top-20 right-4 z-60 space-y-2 w-96 max-w-[calc(100vw-2rem)]">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div
+                x-show="toast.show"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-x-full"
+                x-transition:enter-end="opacity-100 translate-x-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-x-0"
+                x-transition:leave-end="opacity-0 translate-x-full"
+                class="relative flex items-start gap-3 p-4 rounded-lg shadow-lg border backdrop-blur-sm"
+                :class="{
+                    'bg-green-50/95 border-green-200 text-green-800': toast.type === 'success',
+                    'bg-red-50/95 border-red-200 text-red-800': toast.type === 'error',
+                    'bg-yellow-50/95 border-yellow-200 text-yellow-800': toast.type === 'warning',
+                    'bg-blue-50/95 border-blue-200 text-blue-800': toast.type === 'info'
+                }"
+            >
+                <!-- Icon -->
+                <div class="shrink-0 mt-0.5">
+                    <!-- Success Icon -->
+                    <svg x-show="toast.type === 'success'" class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <!-- Error Icon -->
+                    <svg x-show="toast.type === 'error'" class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    <!-- Warning Icon -->
+                    <svg x-show="toast.type === 'warning'" class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <!-- Info Icon -->
+                    <svg x-show="toast.type === 'info'" class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+
+                <!-- Message -->
+                <div class="flex-1 text-sm font-medium" x-text="toast.message"></div>
+
+                <!-- Close Button -->
+                <button
+                    @click="removeToast(toast.id)"
+                    class="shrink-0 p-1 rounded hover:bg-black/5 transition-colors"
+                >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    <!-- Toast Manager Script -->
+    <script>
+        // Toast Manager Alpine.js Component
+        function toastManager() {
+            return {
+                toasts: [],
+                nextId: 1,
+
+                addToast(message, type = 'info', duration = 5000) {
+                    const id = this.nextId++;
+                    const toast = {
+                        id,
+                        message,
+                        type,
+                        show: true
+                    };
+
+                    this.toasts.push(toast);
+
+                    // Auto-remove after duration
+                    if (duration > 0) {
+                        setTimeout(() => {
+                            this.removeToast(id);
+                        }, duration);
+                    }
+
+                    return id;
+                },
+
+                removeToast(id) {
+                    const index = this.toasts.findIndex(t => t.id === id);
+                    if (index > -1) {
+                        this.toasts[index].show = false;
+                        // Remove from array after animation
+                        setTimeout(() => {
+                            this.toasts = this.toasts.filter(t => t.id !== id);
+                        }, 200);
+                    }
+                }
+            }
+        }
+
+        // Global toast helper functions
+        window.toast = {
+            success: (message, duration = 5000) => {
+                Alpine.store('toasts').addToast(message, 'success', duration);
+            },
+            error: (message, duration = 5000) => {
+                Alpine.store('toasts').addToast(message, 'error', duration);
+            },
+            warning: (message, duration = 5000) => {
+                Alpine.store('toasts').addToast(message, 'warning', duration);
+            },
+            info: (message, duration = 5000) => {
+                Alpine.store('toasts').addToast(message, 'info', duration);
+            }
+        };
+
+        // Initialize Alpine store when Alpine is ready
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('toasts', {
+                items: [],
+                nextId: 1,
+
+                addToast(message, type = 'info', duration = 5000) {
+                    const id = this.nextId++;
+                    const toast = {
+                        id,
+                        message,
+                        type,
+                        show: true
+                    };
+
+                    this.items.push(toast);
+
+                    // Auto-remove after duration
+                    if (duration > 0) {
+                        setTimeout(() => {
+                            this.removeToast(id);
+                        }, duration);
+                    }
+
+                    return id;
+                },
+
+                removeToast(id) {
+                    const index = this.items.findIndex(t => t.id === id);
+                    if (index > -1) {
+                        this.items[index].show = false;
+                        // Remove from array after animation
+                        setTimeout(() => {
+                            this.items = this.items.filter(t => t.id !== id);
+                        }, 200);
+                    }
+                }
+            });
+        });
+
+        // Achievement Celebration Component
+        function achievementCelebration() {
+            return {
+                achievements: [],
+                currentAchievement: null,
+                queueIndex: 0,
+
+                addAchievement(achievement) {
+                    this.achievements.push(achievement);
+                    if (!this.currentAchievement) {
+                        this.showNext();
+                    }
+                },
+
+                showNext() {
+                    if (this.queueIndex < this.achievements.length) {
+                        this.currentAchievement = this.achievements[this.queueIndex];
+                        this.queueIndex++;
+                        // Trigger confetti
+                        window.launchConfetti();
+                    } else {
+                        this.currentAchievement = null;
+                        this.achievements = [];
+                        this.queueIndex = 0;
+                    }
+                },
+
+                closeAchievement() {
+                    this.currentAchievement = null;
+                    // Show next achievement after a brief delay
+                    setTimeout(() => {
+                        this.showNext();
+                    }, 500);
+                }
+            };
+        }
+
+        // Confetti Animation
+        window.launchConfetti = function() {
+            const canvas = document.getElementById('confetti-canvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 150;
+            const colors = ['#FCD34D', '#FBBF24', '#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#3B82F6'];
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height - canvas.height;
+                    this.size = Math.random() * 8 + 4;
+                    this.speedY = Math.random() * 3 + 2;
+                    this.speedX = Math.random() * 2 - 1;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.rotation = Math.random() * 360;
+                    this.rotationSpeed = Math.random() * 10 - 5;
+                }
+
+                update() {
+                    this.y += this.speedY;
+                    this.x += this.speedX;
+                    this.rotation += this.rotationSpeed;
+
+                    if (this.y > canvas.height) {
+                        this.y = -10;
+                        this.x = Math.random() * canvas.width;
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            let animationId;
+            let frameCount = 0;
+            const maxFrames = 180; // 3 seconds at 60fps
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+
+                frameCount++;
+                if (frameCount < maxFrames) {
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            animate();
+        };
+
+        // Global achievement helper
+        window.showAchievement = function(achievement) {
+            const event = new CustomEvent('achievement-unlocked', { detail: achievement });
+            window.dispatchEvent(event);
+        };
+
+        window.addEventListener('achievement-unlocked', (e) => {
+            // Find the Alpine component and add achievement
+            const celebrationEl = document.querySelector('[x-data*="achievementCelebration"]');
+            if (celebrationEl) {
+                const component = Alpine.$data(celebrationEl);
+                component.addAchievement(e.detail);
+            }
+        });
+
+        // Check for flash messages from server and show as toasts
+        <% if (typeof query !== 'undefined' && query) { %>
+            document.addEventListener('DOMContentLoaded', () => {
+                <% if (query.success) { %>
+                    toast.success('<%= query.success %>');
+                <% } %>
+                <% if (query.error) { %>
+                    toast.error('<%= query.error %>');
+                <% } %>
+                <% if (query.warning) { %>
+                    toast.warning('<%= query.warning %>');
+                <% } %>
+                <% if (query.info) { %>
+                    toast.info('<%= query.info %>');
+                <% } %>
+                <% if (query.achievements) { %>
+                    // Parse achievements from query string
+                    try {
+                        const achievements = JSON.parse(decodeURIComponent('<%= query.achievements %>'));
+                        achievements.forEach(achievement => {
+                            setTimeout(() => {
+                                window.showAchievement(achievement);
+                            }, 1000);
+                        });
+                    } catch (e) {
+                        console.error('Failed to parse achievements:', e);
+                    }
+                <% } %>
+            });
+        <% } %>
+    </script>
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

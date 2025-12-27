@@ -8,6 +8,7 @@ import expressLayouts from "express-ejs-layouts";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./middleware/logger";
 import { loadUser } from "./middleware/loadUser";
+import { queryParams } from "./middleware/queryParams";
 import router from "./routes";
 
 const app: Application = express();
@@ -26,6 +27,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(logger);
 app.use(loadUser);
+app.use(queryParams);
 
 // Routes
 app.use("/", router);

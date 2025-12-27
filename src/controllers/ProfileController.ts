@@ -166,15 +166,10 @@ export class ProfileController {
 			}
 
 			if (!errors.isEmpty()) {
-				res.render("profile/edit", {
-					title: "Edit Profile",
-					user: { ...currentUser, ...req.body },
-					unitSystems: UNIT_SYSTEMS,
-					genders: GENDERS,
-					activityLevels: ACTIVITY_LEVELS,
-					errors: errors.array(),
-					success: null,
-				});
+				res.redirect(
+					"/profile/edit?error=" +
+						encodeURIComponent(errors.array()[0].msg),
+				);
 				return;
 			}
 
@@ -240,15 +235,11 @@ export class ProfileController {
 			// Update res.locals.user so the navbar reflects changes immediately
 			res.locals.user = updatedUser;
 
-			res.render("profile/edit", {
-				title: "Edit Profile",
-				user: updatedUser,
-				unitSystems: UNIT_SYSTEMS,
-				genders: GENDERS,
-				activityLevels: ACTIVITY_LEVELS,
-				errors: [],
-				success: "Profile updated successfully!",
-			});
+			// Redirect with success message
+			res.redirect(
+				"/profile/edit?success=" +
+					encodeURIComponent("Profile updated successfully!"),
+			);
 		} catch (error) {
 			next(error);
 		}
