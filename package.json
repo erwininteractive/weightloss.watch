@@ -25,14 +25,11 @@
 		"db:push": "npx prisma db push",
 		"db:studio": "npx prisma studio",
 		"db:generate": "npx prisma generate",
-		"db:seed": "npx ts-node prisma/seed.ts",
-		"create-admin": "npx ts-node scripts/create-admin.ts",
-		"setup:paypal-plans": "npx ts-node scripts/setup-paypal-plans.ts"
-	},
-	"prisma": {
-		"seed": "ts-node prisma/seed.ts"
+		"db:seed": "npx ts-node prisma/seed.ts"
 	},
 	"keywords": [
+		"weight loss",
+		"weight loss challenge",
 		"typescript",
 		"mvc",
 		"express",
