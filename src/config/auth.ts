@@ -1,3 +1,5 @@
+import "./env";
+
 export const authConfig = {
 	jwt: {
 		accessTokenSecret:

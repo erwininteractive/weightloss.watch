@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import "../src/config/env";
 
 import {
 	PrismaClient,
@@ -31,23 +30,56 @@ async function main() {
 	const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 	console.log(`Using default password: ${DEFAULT_PASSWORD}`);
 
-	// Clean existing data
-	await prisma.userAchievement.deleteMany();
+	// Clean existing data (preserve admin users)
+	const adminUserIds = (
+		await prisma.user.findMany({
+			where: { isAdmin: true },
+			select: { id: true },
+		})
+	).map((u) => u.id);
+
+	await prisma.userAchievement.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
 	await prisma.achievement.deleteMany();
-	await prisma.challengeParticipant.deleteMany();
+	await prisma.challengeParticipant.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
 	await prisma.challenge.deleteMany();
 	await prisma.message.deleteMany();
-	await prisma.conversationParticipant.deleteMany();
+	await prisma.conversationParticipant.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
 	await prisma.conversation.deleteMany();
-	await prisma.like.deleteMany();
-	await prisma.comment.deleteMany();
-	await prisma.post.deleteMany();
-	await prisma.teamMember.deleteMany();
-	await prisma.team.deleteMany();
+	await prisma.like.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
+	await prisma.comment.deleteMany({
+		where: { authorId: { notIn: adminUserIds } },
+	});
+	await prisma.post.deleteMany({
+		where: { authorId: { notIn: adminUserIds } },
+	});
+	await prisma.teamMember.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
+	await prisma.team.deleteMany({
+		where: { ownerId: { notIn: adminUserIds } },
+	});
 	await prisma.progressPhoto.deleteMany();
-	await prisma.weightEntry.deleteMany();
-	await prisma.refreshToken.deleteMany();
-	await prisma.user.deleteMany();
+	await prisma.weightEntry.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
+	await prisma.refreshToken.deleteMany({
+		where: { userId: { notIn: adminUserIds } },
+	});
+	await prisma.user.deleteMany({
+		where: { isAdmin: false },
+	});
+
+	if (adminUserIds.length > 0) {
+		console.log(`Preserved ${adminUserIds.length} admin user(s)`);
+	}
 
 	// Create Users
 	const user1 = await prisma.user.create({
