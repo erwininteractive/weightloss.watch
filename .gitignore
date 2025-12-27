@@ -1,0 +1,26 @@
+node_modules/
+dist/
+docs/
+
+# Environment files (keep .env.example for reference)
+.env*
+!.env.example
+*.log
+.DS_Store
+CLAUDE.md
+GEMINI.md
+paypalpaymentlink
+wlt.png
+coverage/
+
+/src/generated/prisma
+
+# Uploads (keep directory structure)
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/progress/
+public/uploads/progress/*
+!public/uploads/progress/.gitkeep
+!public/uploads/avatars/
+public/uploads/avatars/*
+!public/uploads/avatars/.gitkeep

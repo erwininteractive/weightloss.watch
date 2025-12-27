@@ -36,8 +36,9 @@ export class EmailService {
 				greetingTimeout: 10000, // 10 second greeting timeout
 				socketTimeout: 30000, // 30 second socket timeout
 				tls: {
-					// Do not fail on invalid certs in development
-					rejectUnauthorized: process.env.NODE_ENV === "production",
+					// Reject invalid certs unless explicitly disabled
+					rejectUnauthorized:
+						process.env.SMTP_REJECT_UNAUTHORIZED !== "false",
 					minVersion: "TLSv1.2",
 				},
 			});
