@@ -20,7 +20,7 @@
 		try {
 			const response = await fetch(`/admin/users/<%= viewedUser.id %>/reset-password`, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
 				body: JSON.stringify({ newPassword: this.newPassword })
 			});
 
@@ -46,7 +46,8 @@
 
 		try {
 			const response = await fetch(`/admin/users/<%= viewedUser.id %>/toggle-admin`, {
-				method: 'POST'
+				method: 'POST',
+				headers: { 'Accept': 'application/json' }
 			});
 
 			const data = await response.json();
@@ -69,7 +70,8 @@
 
 		try {
 			const response = await fetch(`/admin/users/<%= viewedUser.id %>/toggle-active`, {
-				method: 'POST'
+				method: 'POST',
+				headers: { 'Accept': 'application/json' }
 			});
 
 			const data = await response.json();
@@ -92,7 +94,8 @@
 
 		try {
 			const response = await fetch(`/admin/users/<%= viewedUser.id %>/resend-verification`, {
-				method: 'POST'
+				method: 'POST',
+				headers: { 'Accept': 'application/json' }
 			});
 
 			const data = await response.json();

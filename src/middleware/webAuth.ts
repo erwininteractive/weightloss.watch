@@ -4,6 +4,18 @@ import { AuthenticatedRequest } from "../types/auth";
 import { authConfig } from "../config/auth";
 
 /**
+ * Check if the request expects a JSON response (AJAX/fetch request)
+ */
+function expectsJson(req: AuthenticatedRequest): boolean {
+	const accept = req.headers.accept || "";
+	return (
+		req.xhr ||
+		accept.includes("application/json") ||
+		req.headers["x-requested-with"] === "XMLHttpRequest"
+	);
+}
+
+/**
  * Middleware to authenticate web pages using cookies
  * Redirects to login page if not authenticated
  */
@@ -31,10 +43,17 @@ export const webAuthenticate = async (
 		const refreshToken = req.cookies[authConfig.cookie.refreshTokenName];
 
 		if (!refreshToken) {
-			res.redirect(
-				"/login?error=" +
-					encodeURIComponent("Please sign in to continue."),
-			);
+			if (expectsJson(req)) {
+				res.status(401).json({
+					success: false,
+					message: "Please sign in to continue.",
+				});
+			} else {
+				res.redirect(
+					"/login?error=" +
+						encodeURIComponent("Please sign in to continue."),
+				);
+			}
 			return;
 		}
 
@@ -62,12 +81,19 @@ export const webAuthenticate = async (
 			// Refresh failed, clear cookies and redirect
 			res.clearCookie(authConfig.cookie.refreshTokenName);
 			res.clearCookie("accessToken");
-			res.redirect(
-				"/login?error=" +
-					encodeURIComponent(
-						"Session expired. Please sign in again.",
-					),
-			);
+			if (expectsJson(req)) {
+				res.status(401).json({
+					success: false,
+					message: "Session expired. Please sign in again.",
+				});
+			} else {
+				res.redirect(
+					"/login?error=" +
+						encodeURIComponent(
+							"Session expired. Please sign in again.",
+						),
+				);
+			}
 		}
 	} catch (error) {
 		next(error);
