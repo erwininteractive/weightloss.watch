@@ -18,6 +18,7 @@ import donateRoutes from "./donateRoutes";
 import newsRoutes from "./newsRoutes";
 import contributeRoutes from "./contributeRoutes";
 import toastDemoRoutes from "./toastDemoRoutes";
+import messageRoutes from "./messageRoutes";
 import { SettingsController } from "../controllers/SettingsController";
 import { WeightController } from "../controllers/WeightController";
 import { authenticate } from "../middleware/auth";
@@ -46,6 +47,7 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/profile", profileRoutes);
 router.use("/progress", weightRoutes);
 router.use("/teams", teamRoutes);
+router.use("/messages", messageRoutes); // Messaging routes
 router.use("/", postRoutes); // Post and comment routes
 router.use("/", challengeRoutes); // Challenge routes
 router.use("/achievements", achievementRoutes); // Achievement routes

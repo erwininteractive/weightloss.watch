@@ -163,3 +163,50 @@ export async function createTestUserAchievement(
 		},
 	});
 }
+
+/**
+ * Factory for creating test conversations
+ */
+export async function createTestConversation(
+	participantIds: string[],
+	overrides: {
+		name?: string;
+		isGroup?: boolean;
+		teamId?: string;
+	} = {},
+) {
+	return prisma.conversation.create({
+		data: {
+			name: overrides.name || null,
+			isGroup: overrides.isGroup || false,
+			teamId: overrides.teamId || null,
+			participants: {
+				create: participantIds.map((userId) => ({ userId })),
+			},
+		},
+		include: {
+			participants: true,
+		},
+	});
+}
+
+/**
+ * Factory for creating test messages
+ */
+export async function createTestMessage(
+	conversationId: string,
+	senderId: string,
+	overrides: {
+		content?: string;
+		createdAt?: Date;
+	} = {},
+) {
+	return prisma.message.create({
+		data: {
+			conversationId,
+			senderId,
+			content: overrides.content || "Test message",
+			createdAt: overrides.createdAt || new Date(),
+		},
+	});
+}

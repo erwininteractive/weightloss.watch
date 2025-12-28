@@ -1,0 +1,92 @@
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-slate-800">Messages</h1>
+        <a href="/messages/new" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New Message
+        </a>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="bg-white rounded-lg shadow">
+        <% if (conversations && conversations.length > 0) { %>
+            <div class="divide-y divide-gray-100">
+                <% conversations.forEach(function(conv) { %>
+                    <a href="/messages/<%= conv.id %>" class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                        <!-- Avatar -->
+                        <% if (conv.isGroup) { %>
+                            <div class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                        <% } else { %>
+                            <%
+                                const otherParticipant = conv.participants.find(p => p.user && p.user.id !== user.id);
+                                const avatarUser = otherParticipant && otherParticipant.user ? otherParticipant.user : { username: 'Unknown', avatarUrl: null };
+                            %>
+                            <% if (avatarUser.avatarUrl) { %>
+                                <img src="<%= avatarUser.avatarUrl %>" alt="<%= avatarUser.username %>" class="w-12 h-12 rounded-full object-cover shrink-0">
+                            <% } else { %>
+                                <div class="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold shrink-0">
+                                    <%= avatarUser.username.charAt(0).toUpperCase() %>
+                                </div>
+                            <% } %>
+                        <% } %>
+
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-medium text-gray-900 truncate <%= conv.unreadCount > 0 ? 'font-semibold' : '' %>">
+                                    <%= conv.displayName %>
+                                </span>
+                                <% if (conv.messages && conv.messages.length > 0) { %>
+                                    <span class="text-xs text-gray-500 shrink-0">
+                                        <%= new Date(conv.messages[0].createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+                                    </span>
+                                <% } %>
+                            </div>
+                            <% if (conv.messages && conv.messages.length > 0) { %>
+                                <p class="text-sm text-gray-500 truncate <%= conv.unreadCount > 0 ? 'text-gray-700' : '' %>">
+                                    <% if (conv.messages[0].sender.id === user.id) { %>
+                                        <span class="text-gray-400">You: </span>
+                                    <% } %>
+                                    <%= conv.messages[0].content %>
+                                </p>
+                            <% } else { %>
+                                <p class="text-sm text-gray-400 italic">No messages yet</p>
+                            <% } %>
+                        </div>
+
+                        <!-- Unread Badge -->
+                        <% if (conv.unreadCount > 0) { %>
+                            <div class="shrink-0">
+                                <span class="inline-flex items-center justify-center w-6 h-6 bg-teal-600 text-white text-xs font-bold rounded-full">
+                                    <%= conv.unreadCount > 99 ? '99+' : conv.unreadCount %>
+                                </span>
+                            </div>
+                        <% } %>
+                    </a>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="text-center py-12 px-4">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-slate-800 mb-1">No conversations yet</h3>
+                <p class="text-gray-500 mb-6">Start a conversation with someone on your team!</p>
+                <a href="/messages/new" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Start a Conversation
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div>

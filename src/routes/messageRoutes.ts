@@ -1,0 +1,38 @@
+import { Router } from "express";
+import { MessageController } from "../controllers/MessageController";
+import { webAuthenticate } from "../middleware/webAuth";
+
+const router = Router();
+
+// All message routes require authentication
+router.use(webAuthenticate);
+
+// Web routes
+router.get("/", MessageController.listConversations);
+router.get("/new", MessageController.newConversationForm);
+router.post(
+	"/new",
+	MessageController.newConversationValidation,
+	MessageController.createConversation
+);
+router.get("/:conversationId", MessageController.showConversation);
+router.post(
+	"/:conversationId",
+	MessageController.sendMessageValidation,
+	MessageController.sendMessage
+);
+router.post("/:conversationId/read", MessageController.markAsRead);
+
+// Message edit/delete (API-style for AJAX)
+router.put(
+	"/:conversationId/:messageId",
+	MessageController.editMessageValidation,
+	MessageController.editMessage
+);
+router.delete(
+	"/:conversationId/:messageId",
+	MessageController.messageActionValidation,
+	MessageController.deleteMessage
+);
+
+export default router;
