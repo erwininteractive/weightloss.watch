@@ -12,11 +12,8 @@ import achievementRoutes from "./achievementRoutes";
 import achievementApiRoutes from "./achievementApiRoutes";
 import settingsRoutes from "./settingsRoutes";
 import adminRoutes from "./adminRoutes";
-import resourcesRoutes from "./resourcesRoutes";
-import aboutRoutes from "./aboutRoutes";
 import donateRoutes from "./donateRoutes";
 import newsRoutes from "./newsRoutes";
-import contributeRoutes from "./contributeRoutes";
 import toastDemoRoutes from "./toastDemoRoutes";
 import messageRoutes from "./messageRoutes";
 import { SettingsController } from "../controllers/SettingsController";
@@ -27,13 +24,10 @@ import { webAuthenticate } from "../middleware/webAuth";
 const router = Router();
 
 // Mount routes
-router.use("/", homeRoutes);
+router.use("/", homeRoutes); // Public pages (home, about, resources, contribute)
 router.use("/", webAuthRoutes); // Web auth pages (login, register, logout)
-router.use("/", aboutRoutes); // About routes (public)
-router.use("/", resourcesRoutes); // Resources routes (public)
-router.use("/", donateRoutes); // Donate routes (public)
+router.use("/", donateRoutes); // Donate routes (public + PayPal API)
 router.use("/", newsRoutes); // News routes (public)
-router.use("/", contributeRoutes); // Contribute routes (public)
 router.use("/toast-demo", toastDemoRoutes); // Toast demo page
 router.use("/api/auth", authRoutes); // API auth endpoints (JSON)
 router.use("/achievements/api", achievementApiRoutes); // Achievement API endpoints
