@@ -610,8 +610,9 @@
                     });
 
                     socket.on('newMessage', function(data) {
-                        // Show toast notification
-                        if (window.toast && data.message) {
+                        // Show toast notification (but not on messages pages)
+                        const onMessagesPage = window.location.pathname.startsWith('/messages');
+                        if (window.toast && data.message && !onMessagesPage) {
                             const preview = data.message.content && data.message.content.length > 50
                                 ? data.message.content.substring(0, 50) + '...'
                                 : (data.message.content || 'New message');
@@ -624,7 +625,7 @@
                         // Update unread badge if available
                         updateUnreadBadge();
 
-                        // Dispatch custom event for other components
+                        // Dispatch custom event for other components (team chat widget uses this)
                         window.dispatchEvent(new CustomEvent('wlt:newMessage', {
                             detail: data
                         }));

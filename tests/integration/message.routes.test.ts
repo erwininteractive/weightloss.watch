@@ -7,6 +7,7 @@ import {
 	createTestUser,
 	createTestConversation,
 	createTestMessage,
+	createTestTeam,
 } from "../helpers";
 
 describe("Message Routes", () => {
@@ -15,7 +16,7 @@ describe("Message Routes", () => {
 	});
 
 	describe("GET /messages", () => {
-		it("should render messages list for authenticated user", async () => {
+		it("should render team feed for authenticated user", async () => {
 			const { tokens } = await createAuthenticatedUser();
 
 			const response = await request(app)
@@ -23,7 +24,7 @@ describe("Message Routes", () => {
 				.set("Cookie", [`refreshToken=${tokens.refreshToken}`])
 				.expect(200);
 
-			expect(response.text).toContain("Messages");
+			expect(response.text).toContain("Team Feed");
 		});
 
 		it("should redirect to login if not authenticated", async () => {
@@ -32,85 +33,30 @@ describe("Message Routes", () => {
 			expect(response.headers.location).toContain("/login");
 		});
 
-		it("should show user's conversations", async () => {
+		it("should show posts from user's teams", async () => {
 			const { user, tokens } = await createAuthenticatedUser();
-			const otherUser = await createTestUser({ username: "otheruser" });
 
-			// Create a conversation
-			await createTestConversation([user.id, otherUser.id]);
+			// Create a team
+			const team = await createTestTeam(user.id, { name: "My Team" });
+
+			// Create a post in the team
+			await prisma.post.create({
+				data: {
+					authorId: user.id,
+					teamId: team.id,
+					content: "Hello from the team!",
+					type: "GENERAL",
+					visibility: "TEAM",
+				},
+			});
 
 			const response = await request(app)
 				.get("/messages")
 				.set("Cookie", [`refreshToken=${tokens.refreshToken}`])
 				.expect(200);
 
-			expect(response.text).toContain("otheruser");
-		});
-	});
-
-	describe("GET /messages/new", () => {
-		it("should render new conversation form", async () => {
-			const { tokens } = await createAuthenticatedUser();
-
-			const response = await request(app)
-				.get("/messages/new")
-				.set("Cookie", [`refreshToken=${tokens.refreshToken}`])
-				.expect(200);
-
-			expect(response.text).toContain("New Conversation");
-		});
-
-		it("should search for users when query provided", async () => {
-			const { tokens } = await createAuthenticatedUser();
-			await createTestUser({ username: "searchable" });
-
-			const response = await request(app)
-				.get("/messages/new?q=search")
-				.set("Cookie", [`refreshToken=${tokens.refreshToken}`])
-				.expect(200);
-
-			expect(response.text).toContain("searchable");
-		});
-	});
-
-	describe("POST /messages/new", () => {
-		it("should create a new DM conversation", async () => {
-			const { user, tokens } = await createAuthenticatedUser();
-			const otherUser = await createTestUser();
-
-			const response = await request(app)
-				.post("/messages/new")
-				.set("Cookie", [`refreshToken=${tokens.refreshToken}`])
-				.send({ participantId: otherUser.id })
-				.expect(302);
-
-			// Should redirect to the new conversation
-			expect(response.headers.location).toMatch(/\/messages\/[\w-]+/);
-
-			// Verify conversation was created
-			const conversation = await prisma.conversation.findFirst({
-				where: {
-					participants: {
-						some: { userId: user.id },
-					},
-				},
-				include: { participants: true },
-			});
-
-			expect(conversation).not.toBeNull();
-			expect(conversation!.participants).toHaveLength(2);
-		});
-
-		it("should return error without participant", async () => {
-			const { tokens } = await createAuthenticatedUser();
-
-			const response = await request(app)
-				.post("/messages/new")
-				.set("Cookie", [`refreshToken=${tokens.refreshToken}`])
-				.send({})
-				.expect(200); // Re-renders form with error
-
-			expect(response.text).toContain("Please select a user to message");
+			expect(response.text).toContain("Hello from the team!");
+			expect(response.text).toContain("My Team");
 		});
 	});
 

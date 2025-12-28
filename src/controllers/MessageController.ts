@@ -61,9 +61,9 @@ export class MessageController {
 
 	/**
 	 * GET /messages
-	 * List all conversations for the current user
+	 * Show aggregated feed of posts from all teams the user is a member of
 	 */
-	static async listConversations(
+	static async listTeamFeeds(
 		req: AuthenticatedRequest,
 		res: Response,
 		next: NextFunction
@@ -80,21 +80,63 @@ export class MessageController {
 				return;
 			}
 
-			const conversations =
-				await MessageService.getUserConversations(userId);
+			// Get all teams the user is a member of
+			const memberships = await prisma.teamMember.findMany({
+				where: { userId },
+				select: { teamId: true },
+			});
 
-			// Add display names
-			const conversationsWithNames = conversations.map((conv) => ({
-				...conv,
-				displayName: MessageService.getConversationDisplayName(
-					conv,
-					userId
-				),
+			const teamIds = memberships.map((m) => m.teamId);
+
+			// Get posts from all user's teams
+			const posts = await prisma.post.findMany({
+				where: {
+					teamId: { in: teamIds },
+					deletedAt: null,
+				},
+				include: {
+					author: {
+						select: {
+							id: true,
+							username: true,
+							displayName: true,
+							avatarUrl: true,
+						},
+					},
+					team: {
+						select: {
+							id: true,
+							name: true,
+							avatarUrl: true,
+						},
+					},
+					_count: {
+						select: {
+							comments: true,
+							likes: true,
+						},
+					},
+					likes: {
+						where: { userId },
+						select: { id: true },
+					},
+				},
+				orderBy: {
+					createdAt: "desc",
+				},
+				take: 50, // Limit to recent posts
+			});
+
+			// Transform posts to include isLiked flag
+			const postsWithLikeStatus = posts.map((post) => ({
+				...post,
+				isLiked: post.likes.length > 0,
+				likes: undefined,
 			}));
 
 			res.render("messages/index", {
-				title: "Messages",
-				conversations: conversationsWithNames,
+				title: "Team Feed",
+				posts: postsWithLikeStatus,
 				user,
 			});
 		} catch (error) {

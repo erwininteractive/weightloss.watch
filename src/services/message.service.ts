@@ -37,9 +37,12 @@ export interface MessageWithSender extends Message {
 export class MessageService {
 	/**
 	 * Get all conversations for a user
+	 * @param userId - The user ID
+	 * @param teamOnly - If true, only return team conversations
 	 */
 	static async getUserConversations(
-		userId: string
+		userId: string,
+		teamOnly: boolean = false
 	): Promise<ConversationWithDetails[]> {
 		const conversations = await prisma.conversation.findMany({
 			where: {
@@ -48,6 +51,7 @@ export class MessageService {
 						userId,
 					},
 				},
+				...(teamOnly && { teamId: { not: null } }),
 			},
 			include: {
 				participants: {

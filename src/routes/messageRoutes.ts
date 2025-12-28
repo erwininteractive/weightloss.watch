@@ -8,13 +8,7 @@ const router = Router();
 router.use(webAuthenticate);
 
 // Web routes
-router.get("/", MessageController.listConversations);
-router.get("/new", MessageController.newConversationForm);
-router.post(
-	"/new",
-	MessageController.newConversationValidation,
-	MessageController.createConversation
-);
+router.get("/", MessageController.listTeamFeeds);
 
 // API endpoints (must be before :conversationId routes)
 router.get("/unread-count", MessageController.getUnreadCount);
