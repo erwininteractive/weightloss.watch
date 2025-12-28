@@ -1,5 +1,6 @@
 import prisma from "./database";
 import { Conversation, Message, User } from "@prisma/client";
+import { SocketService } from "./socket.service";
 
 export interface ConversationWithDetails extends Conversation {
 	participants: {
@@ -328,15 +329,30 @@ export class MessageService {
 		content: string,
 		mediaUrls?: string[]
 	): Promise<MessageWithSender> {
-		// Verify sender is a participant
-		const isParticipant = await prisma.conversationParticipant.findFirst({
+		// Verify sender is a participant and get all participants
+		const conversation = await prisma.conversation.findFirst({
 			where: {
-				conversationId,
-				userId: senderId,
+				id: conversationId,
+				participants: {
+					some: { userId: senderId },
+				},
+			},
+			include: {
+				participants: {
+					select: {
+						userId: true,
+						user: {
+							select: {
+								id: true,
+								username: true,
+							},
+						},
+					},
+				},
 			},
 		});
 
-		if (!isParticipant) {
+		if (!conversation) {
 			throw new Error("User is not a participant in this conversation");
 		}
 
@@ -364,6 +380,32 @@ export class MessageService {
 				data: { updatedAt: new Date() },
 			}),
 		]);
+
+		// Send real-time notification to other participants
+		const recipientIds = conversation.participants
+			.map((p) => p.userId)
+			.filter((id) => id !== senderId);
+
+		// Determine conversation display name for notification
+		let conversationName: string;
+		if (conversation.isGroup && conversation.name) {
+			conversationName = conversation.name;
+		} else {
+			// For DMs, use sender's name as the notification title
+			conversationName = message.sender.username;
+		}
+
+		SocketService.notifyNewMessage(
+			recipientIds,
+			{
+				id: message.id,
+				conversationId: message.conversationId,
+				content: message.content,
+				sender: message.sender,
+				createdAt: message.createdAt,
+			},
+			conversationName
+		);
 
 		return message;
 	}

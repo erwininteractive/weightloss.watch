@@ -23,6 +23,9 @@ router.post(
 );
 router.post("/:conversationId/read", MessageController.markAsRead);
 
+// API endpoints
+router.get("/unread-count", MessageController.getUnreadCount);
+
 // Message edit/delete (API-style for AJAX)
 router.put(
 	"/:conversationId/:messageId",

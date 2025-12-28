@@ -60,11 +60,12 @@
                     <% if (typeof user !== 'undefined' && user) { %>
                         <a href="/dashboard" class="text-slate-600 hover:text-teal-600 transition-colors font-medium">Dashboard</a>
                         <a href="/teams" class="text-slate-600 hover:text-teal-600 transition-colors font-medium">Teams</a>
-                        <a href="/messages" class="text-slate-600 hover:text-teal-600 transition-colors flex items-center gap-1 font-medium">
+                        <a href="/messages" class="text-slate-600 hover:text-teal-600 transition-colors flex items-center gap-1 font-medium relative">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                             </svg>
                             Messages
+                            <span id="messages-unread-badge" class="hidden absolute -top-1 -right-2 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full"></span>
                         </a>
                         <a href="/achievements" class="text-slate-600 hover:text-teal-600 transition-colors flex items-center gap-1 font-medium">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -141,11 +142,12 @@
                 <% if (typeof user !== 'undefined' && user) { %>
                     <a href="/dashboard" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Dashboard</a>
                     <a href="/teams" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors">Teams</a>
-                    <a href="/messages" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2">
+                    <a href="/messages" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2 relative">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                         </svg>
                         Messages
+                        <span id="messages-unread-badge-mobile" class="hidden inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full ml-auto"></span>
                     </a>
                     <a href="/achievements" class="px-3 py-2 rounded-lg text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -558,6 +560,133 @@
             });
         <% } %>
     </script>
+
+    <!-- Socket.io Client for Real-time Notifications -->
+    <% if (typeof user !== 'undefined' && user) { %>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Real-time notification system
+        (function() {
+            let socket = null;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+
+            function connectSocket() {
+                // Connect to Socket.io server
+                socket = io({
+                    autoConnect: true,
+                    reconnection: true,
+                    reconnectionAttempts: maxReconnectAttempts,
+                    reconnectionDelay: 1000,
+                });
+
+                socket.on('connect', function() {
+                    console.log('Socket connected');
+                    // Authenticate with access token from cookie
+                    const accessToken = document.cookie
+                        .split('; ')
+                        .find(row => row.startsWith('accessToken='))
+                        ?.split('=')[1];
+
+                    if (accessToken) {
+                        socket.emit('authenticate', accessToken);
+                    }
+                });
+
+                socket.on('authenticated', function(data) {
+                    if (data.success) {
+                        console.log('Socket authenticated');
+                        reconnectAttempts = 0;
+                    } else {
+                        console.warn('Socket authentication failed:', data.error);
+                    }
+                });
+
+                socket.on('newMessage', function(data) {
+                    console.log('New message received:', data);
+
+                    // Show toast notification
+                    if (window.toast) {
+                        const preview = data.message.content.length > 50
+                            ? data.message.content.substring(0, 50) + '...'
+                            : data.message.content;
+                        window.toast.info(
+                            `${data.conversationName}: ${preview}`,
+                            8000
+                        );
+                    }
+
+                    // Update unread badge if available
+                    updateUnreadBadge();
+
+                    // Dispatch custom event for other components
+                    window.dispatchEvent(new CustomEvent('wlt:newMessage', {
+                        detail: data
+                    }));
+                });
+
+                socket.on('disconnect', function(reason) {
+                    console.log('Socket disconnected:', reason);
+                });
+
+                socket.on('connect_error', function(error) {
+                    console.warn('Socket connection error:', error.message);
+                    reconnectAttempts++;
+                    if (reconnectAttempts >= maxReconnectAttempts) {
+                        console.log('Max reconnect attempts reached');
+                    }
+                });
+            }
+
+            // Update unread badge in navigation
+            function updateUnreadBadge() {
+                const badge = document.getElementById('messages-unread-badge');
+                const mobileBadge = document.getElementById('messages-unread-badge-mobile');
+
+                // Fetch current unread count
+                fetch('/messages/unread-count')
+                    .then(res => res.json())
+                    .then(data => {
+                        const count = data.unreadCount || 0;
+                        const displayCount = count > 99 ? '99+' : count.toString();
+
+                        // Update desktop badge
+                        if (badge) {
+                            if (count > 0) {
+                                badge.textContent = displayCount;
+                                badge.classList.remove('hidden');
+                            } else {
+                                badge.classList.add('hidden');
+                            }
+                        }
+
+                        // Update mobile badge
+                        if (mobileBadge) {
+                            if (count > 0) {
+                                mobileBadge.textContent = displayCount;
+                                mobileBadge.classList.remove('hidden');
+                            } else {
+                                mobileBadge.classList.add('hidden');
+                            }
+                        }
+                    })
+                    .catch(err => console.warn('Failed to fetch unread count:', err));
+            }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                connectSocket();
+                updateUnreadBadge();
+            });
+
+            // Expose for external use
+            window.wltSocket = {
+                getSocket: () => socket,
+                updateUnreadBadge: updateUnreadBadge
+            };
+        })();
+    </script>
+    <% } %>
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>

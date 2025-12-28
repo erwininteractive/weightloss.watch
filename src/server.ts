@@ -1,6 +1,7 @@
 import "./config/env";
 
 import express, { Application } from "express";
+import { createServer } from "http";
 import path from "path";
 import cookieParser from "cookie-parser";
 import expressLayouts from "express-ejs-layouts";
@@ -9,8 +10,10 @@ import { logger } from "./middleware/logger";
 import { loadUser } from "./middleware/loadUser";
 import { queryParams } from "./middleware/queryParams";
 import router from "./routes";
+import { SocketService } from "./services/socket.service";
 
 const app: Application = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // View engine setup
@@ -36,9 +39,13 @@ app.use(errorHandler);
 
 // Only start server if this file is run directly (not imported for testing)
 if (require.main === module) {
-	app.listen(PORT, () => {
+	// Initialize Socket.io
+	SocketService.initialize(httpServer);
+
+	httpServer.listen(PORT, () => {
 		console.log(`Server is running on http://localhost:${PORT}`);
 	});
 }
 
+export { httpServer };
 export default app;
