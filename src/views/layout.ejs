@@ -583,13 +583,14 @@
                 }
 
                 try {
-                    // Connect to Socket.io server - NO reconnection
-                    // If it fails once, we disable it to prevent console spam
+                    // Connect to Socket.io server
                     socket = io({
                         autoConnect: true,
-                        reconnection: false, // Don't reconnect - if server is misconfigured, stop trying
-                        timeout: 5000,
-                        transports: ['polling'], // Only use polling - simpler and more reliable
+                        reconnection: true,
+                        reconnectionAttempts: 3,
+                        reconnectionDelay: 1000,
+                        timeout: 10000,
+                        transports: ['polling', 'websocket'],
                     });
 
                     socket.on('connect', function() {
