@@ -3,8 +3,8 @@ module.exports = {
 		{
 			name: "wlt",
 			script: "./dist/server.js",
-			instances: 2, // or 'max' to use all CPU cores
-			exec_mode: "cluster",
+			instances: 1,
+			exec_mode: "fork",
 			env_file: ".env.production",
 			error_file: "./logs/pm2-error.log",
 			out_file: "./logs/pm2-out.log",
