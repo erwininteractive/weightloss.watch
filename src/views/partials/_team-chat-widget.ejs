@@ -166,6 +166,10 @@ function teamChatWidget(teamId, currentUserId) {
                 const data = event.detail;
                 // Check if this message is for our team conversation
                 if (this.conversationId && data.message.conversationId === this.conversationId) {
+                    // Check if message already exists (prevent duplicates)
+                    const exists = this.messages.some(m => m.id === data.message.id);
+                    if (exists) return;
+
                     // Add message to list if chat is open
                     if (this.isOpen) {
                         this.messages.push(data.message);
