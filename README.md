@@ -1,6 +1,6 @@
 # WeighTogether
 
-A full-featured weight loss tracking application with social features, built with TypeScript, Express, and PostgreSQL.
+A weight loss tracking application with social features, built from the ground up with TypeScript, Express, and PostgreSQL.
 
 ![Build Status](https://github.com/erwininteractive/weightloss.watch/actions/workflows/deploy.yml/badge.svg)
 
@@ -18,6 +18,7 @@ A full-featured weight loss tracking application with social features, built wit
 - **Teams** - Create and join teams for collaborative tracking
 - **Posts** - Share updates, milestones, tips, and motivation
 - **Comments & Likes** - Engage with community posts
+- **Real-time Messaging** - Direct messages with Socket.io
 - **Team Roles** - Owner, Admin, Moderator, and Member permissions
 - **Privacy Controls** - Private, team-only, or public weight entries
 
@@ -25,98 +26,149 @@ A full-featured weight loss tracking application with social features, built wit
 
 - **Challenges** - Team-based and global weight loss challenges
 - **Challenge Types** - Weight loss, consistency, muscle gain, body fat reduction
-- **Achievements** - Milestone tracking and badges (5 lbs lost, 10 lbs lost, etc.)
+- **Achievements** - Milestone tracking and badges (5 lbs lost, 10 lbs lost, streaks, etc.)
 - **Leaderboards** - Track progress within teams and challenges
 
 ### User Experience
 
-- **Authentication** - JWT-based auth with refresh tokens and email verification
+- **Authentication** - Dual auth system: JWT for API, HTTP-only cookies for web
+- **Email Verification** - Secure account activation flow
 - **Password Reset** - Email-based password recovery
-- **Profile Management** - Customizable profiles with avatars and personal info
+- **Profile Management** - Customizable profiles with avatars
+- **Dark/Light Mode** - Theme preference with system detection
 - **Responsive Design** - Mobile-first design with TailwindCSS 4
-- **Birthday Tracking** - Optional birthday field for personalized experience
 
 ### Administration
 
-- **Admin Panel** - Comprehensive user and content management
-- **User Management** - View, edit, suspend, and manage user accounts
-- **Password Reset** - Admin-initiated password resets
-- **Email Verification** - Resend verification emails for users
+- **Admin Panel** - User and content management
+- **User Management** - View, edit, suspend, and manage accounts
 - **Activity Monitoring** - Track user activity and system health
 
-### Prerequisites
+## Design Philosophy
 
-- Node.js 20.x or higher
-- Docker (for PostgreSQL in development)
-- Git
+### Why No Framework?
 
-### Installation
+WeighTogether is intentionally built without heavy full-stack frameworks like Next.js, Nuxt, or Rails. Instead, it's hand-rolled using Express as a minimal foundation. This approach provides:
 
-```bash
-# 1. Clone repository
-git clone https://github.com/andrewthecodertx/weightloss.watch.git
-cd weightloss.watch
+- **Full Control** - No framework abstractions or magic; every piece of code is intentional and understandable
+- **Learning Value** - Great reference for understanding how web applications work at a fundamental level
+- **Flexibility** - Easy to customize without fighting framework conventions
+- **Lightweight** - No unnecessary dependencies or bloat
+- **Longevity** - Less susceptible to framework churn and breaking changes
 
-# 2. Install dependencies
-npm install
+### Architecture Decisions
 
-# 3. Copy environment file
-cp .env.example .env
+**MVC Pattern**: Clean separation of concerns with controllers handling HTTP requests, services containing business logic, and Prisma managing data access. Views are server-rendered EJS templates.
 
-# 4. Start PostgreSQL (Docker)
-npm run db:start
-
-# 5. Run database migrations
-npm run db:migrate
-
-# 6. Seed database (optional)
-npm run db:seed
-
-# 7. Start development server
-npm run dev
+```
+Request → Logger → LoadUser → Auth Middleware → Controller → Service → Prisma → Response
 ```
 
-Visit **<http://localhost:3000>** in your browser!
+**Static Methods**: Controllers and services use static methods rather than class instances. This keeps the code simple and avoids unnecessary object instantiation.
 
-### Test Login (After Seeding)
+```typescript
+// Controllers use static methods with validation arrays
+class WeightController {
+    static validation = [body("weight").isFloat({ min: 50, max: 1000 })];
+    static async log(req: Request, res: Response) { ... }
+}
 
-- Email: <john@example.com>
-- Password: Password123
+// Services are stateless
+class AuthService {
+    static async hashPassword(password: string) { ... }
+    static async verifyToken(token: string) { ... }
+}
+```
+
+**Dual Authentication**: Web routes use HTTP-only cookies with automatic refresh for security and UX. API routes use Bearer tokens for programmatic access.
+
+**Server-Side Rendering**: EJS templates with a master layout system. Alpine.js adds interactivity where needed without the complexity of a SPA.
 
 ## Tech Stack
 
 ### Backend
 
-- **Runtime**: Node.js 20.x with TypeScript
-- **Framework**: Express.js (server-side MVC)
-- **Template Engine**: EJS with express-ejs-layouts
-- **Database**: PostgreSQL 16 with Prisma ORM 7
-- **Authentication**: JWT tokens (access + refresh) with bcrypt
-- **Email**: Nodemailer with SMTP support
-- **File Uploads**: Multer middleware
-- **Validation**: express-validator
+| Technology            | Purpose                               |
+| --------------------- | ------------------------------------- |
+| **Node.js 20.x**      | Runtime environment                   |
+| **TypeScript**        | Type safety and developer experience  |
+| **Express.js**        | Minimal, unopinionated web framework  |
+| **Prisma 7**          | Type-safe ORM with PostgreSQL adapter |
+| **PostgreSQL 16**     | Primary database                      |
+| **Socket.io**         | Real-time messaging and notifications |
+| **JWT + bcrypt**      | Authentication and password hashing   |
+| **Nodemailer**        | Email delivery (SMTP)                 |
+| **Multer**            | File upload handling                  |
+| **express-validator** | Request validation                    |
 
 ### Frontend
 
-- **CSS Framework**: TailwindCSS 4 (processed with Vite)
-- **JavaScript**: Alpine.js for reactive components
-- **Charts**: Chart.js for data visualization
-- **Icons**: Lucide icons
+| Technology        | Purpose                         |
+| ----------------- | ------------------------------- |
+| **EJS**           | Server-side templating          |
+| **TailwindCSS 4** | Utility-first CSS framework     |
+| **Alpine.js**     | Lightweight reactive components |
+| **Chart.js**      | Data visualization              |
+| **Vite**          | CSS build tooling               |
 
-### Development & Deployment
+### Development & Operations
 
-- **Testing**: Jest with Supertest for integration tests
-- **Code Quality**: ESLint + Prettier
-- **Process Management**: PM2 (production)
-- **CI/CD**: GitHub Actions
-- **Web Server**: Nginx (production reverse proxy)
+| Technology            | Purpose                         |
+| --------------------- | ------------------------------- |
+| **Jest + Supertest**  | Unit and integration testing    |
+| **ESLint + Prettier** | Code quality and formatting     |
+| **PM2**               | Process management (production) |
+| **Docker Compose**    | Local PostgreSQL container      |
+| **GitHub Actions**    | CI/CD pipeline                  |
+| **Nginx**             | Reverse proxy (production)      |
 
-### Database Architecture
+## Future Roadmap
 
-- **ORM**: Prisma Client 7 with PostgreSQL adapter
-- **Migrations**: Prisma Migrate
-- **Soft Deletes**: Timestamp-based (deletedAt field)
-- **Relations**: User → Teams, Posts, WeightEntries, Challenges
+- **Redis Integration** - Add Redis for session storage and Socket.io adapter, enabling horizontal scaling with multiple Node.js instances in PM2 cluster mode
+- **Push Notifications** - Web push for achievement unlocks and messages
+- **API Documentation** - OpenAPI/Swagger docs for the REST API
+- **Mobile App** - React Native companion app using the existing API
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20.x or higher
+- Docker (for PostgreSQL)
+- Git
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/andrewthecodertx/weightloss.watch.git
+cd weightloss.watch
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Start PostgreSQL container
+npm run db:start
+
+# Run database migrations
+npm run db:migrate
+
+# Seed database (optional - adds test data)
+npm run db:seed
+
+# Start development server
+npm run dev
+```
+
+Visit **http://localhost:3000** in your browser.
+
+### Test Login (After Seeding)
+
+- Email: john@example.com
+- Password: Password123
 
 ## Development Commands
 
@@ -125,31 +177,28 @@ Visit **<http://localhost:3000>** in your browser!
 ```bash
 npm run db:start       # Start PostgreSQL container
 npm run db:stop        # Stop PostgreSQL container
-npm run db:migrate     # Create and run migration
+npm run db:migrate     # Create and run migrations
 npm run db:push        # Push schema changes (dev only)
-npm run db:studio      # Open Prisma Studio (GUI)
+npm run db:studio      # Open Prisma Studio GUI
 npm run db:seed        # Seed with test data
-npm run db:generate    # Regenerate Prisma client
 ```
 
 ### Application
 
 ```bash
 npm run dev            # Start with hot reload + CSS watch
-npm run dev:server     # Start server only (no CSS watch)
-npm run css:watch      # Watch Tailwind CSS changes
-npm run css:build      # Build CSS once
+npm run build          # Build for production
+npm start              # Run production build
 ```
 
 ### Testing
 
 ```bash
-npm test               # Run all tests
-npm run test:watch     # Run tests in watch mode
-npm run test:coverage  # Generate coverage report
-npm run test:unit      # Run unit tests only
-npm run test:integration # Run integration tests only
-npm run test:ci        # Run tests in CI mode
+npm test                      # Run all tests
+npm test -- path/to/file      # Run single test file
+npm run test:unit             # Unit tests only
+npm run test:integration      # Integration tests only
+npm run test:coverage         # Generate coverage report
 ```
 
 ### Code Quality
@@ -159,133 +208,51 @@ npm run lint           # Run ESLint
 npm run format         # Format with Prettier
 ```
 
-### Build & Production
-
-```bash
-npm run build          # Build CSS + compile TypeScript + generate Prisma client
-npm start              # Run production build
-```
-
 ## Project Structure
 
 ```
 src/
+├── config/            # Environment and auth configuration
 ├── controllers/       # Request handlers (MVC controllers)
-│   ├── AuthController.ts
-│   ├── WebAuthController.ts
+│   ├── HomeController.ts      # Public pages (home, about, resources, contribute)
+│   ├── AuthController.ts      # API authentication
+│   ├── WebAuthController.ts   # Web authentication (login/register pages)
 │   ├── DashboardController.ts
 │   ├── TeamController.ts
-│   ├── ChallengeController.ts
-│   └── AdminController.ts
-├── routes/            # Route definitions
-│   ├── authRoutes.ts
-│   ├── webAuthRoutes.ts
-│   ├── dashboardRoutes.ts
-│   ├── teamRoutes.ts
-│   └── adminRoutes.ts
-├── views/             # EJS templates
-│   ├── layout.ejs     # Main layout
-│   ├── auth/          # Login, register, verify email
-│   ├── dashboard/     # Dashboard views
-│   ├── teams/         # Team management views
-│   └── admin/         # Admin panel views
-├── middleware/        # Custom middleware
-│   ├── auth.ts        # API authentication (JWT)
-│   ├── webAuth.ts     # Web authentication (cookies)
+│   └── ...
+├── middleware/        # Express middleware
+│   ├── auth.ts        # JWT authentication (API)
+│   ├── webAuth.ts     # Cookie authentication (Web)
 │   ├── loadUser.ts    # User context loader
-│   ├── upload.ts      # File upload (Multer)
 │   └── errorHandler.ts
-├── services/          # Business logic
+├── routes/            # Route definitions
+│   └── index.ts       # Route mounting
+├── services/          # Business logic layer
 │   ├── auth.service.ts
-│   ├── email.service.ts
+│   ├── achievement.service.ts
+│   ├── message.service.ts
+│   ├── socket.service.ts
 │   └── database.ts    # Prisma client
-├── config/            # Configuration
-│   └── auth.ts        # JWT config
-├── types/             # TypeScript types
+├── views/             # EJS templates
+│   ├── layout.ejs     # Master layout
+│   └── */             # Feature-specific views
+├── styles/            # Source CSS (Tailwind)
 └── server.ts          # Application entry point
 
 prisma/
-├── schema.prisma      # Database schema (models, enums, relations)
-├── migrations/        # Database migration history
-└── seed.ts            # Seed data for development
+├── schema.prisma      # Database schema
+├── migrations/        # Migration history
+└── seed.ts            # Development seed data
 
 tests/
-├── setup.ts           # Global test configuration
-├── helpers/           # Test utilities and factories
-├── unit/              # Unit tests for services
-└── integration/       # Integration tests for routes
-
-public/
-├── dist/              # Built CSS (generated by Vite)
-└── uploads/           # User-uploaded files
-    ├── avatars/       # Profile pictures
-    └── progress/      # Progress photos
+├── unit/              # Service unit tests
+├── integration/       # Route integration tests
+└── helpers/           # Test utilities and factories
 ```
-
-## Architecture
-
-### MVC Pattern
-
-- **Models**: Defined in `prisma/schema.prisma` (User, Team, Post, Challenge, etc.)
-- **Views**: EJS templates in `src/views/` with layouts
-- **Controllers**: Request handlers in `src/controllers/`
-
-### Authentication Flow
-
-1. User registers → Email verification sent
-2. User verifies email → Account activated
-3. User logs in → Access token (15 min) + Refresh token (7 days)
-4. Access token expires → Auto-refresh via refresh token
-5. Tokens stored in HTTP-only cookies for security
-
-### Database Models
-
-- **User** - Authentication, profile, preferences
-- **Team** - Groups for collaborative tracking
-- **TeamMember** - User-team relationships with roles
-- **WeightEntry** - Weight logs with body metrics
-- **ProgressPhoto** - Photos attached to weight entries
-- **Post** - Social posts (general, milestone, tip, etc.)
-- **Comment** - Comments on posts
-- **Challenge** - Weight loss challenges
-- **RefreshToken** - JWT refresh token storage
-
-## Contributing
-
-**We're actively looking for contributors!** WeighTogether is a free and open source
-project, and we welcome contributions of all kinds.
-
-### Ways to Contribute
-
-- **Code**: Fix bugs, add features, improve performance
-- **Documentation**: Improve README, add guides, fix typos
-- **Design**: UI/UX improvements, accessibility enhancements
-- **Testing**: Write tests, report bugs, suggest improvements
-- **Translations**: Help make the app accessible worldwide
-
-### Getting Started
-
-1. Fork the repository
-2. Clone your fork and set up the development environment (see Quick Start above)
-3. Create a feature branch: `git checkout -b feature/your-feature-name`
-4. Make your changes
-5. Run tests: `npm test`
-6. Run linter: `npm run lint`
-7. Submit a pull request with a clear description of your changes
-
-### Good First Issues
-
-New to the project? Look for issues labeled `good first issue` on GitHub - these
-are great starting points for new contributors.
-
-### Code of Conduct
-
-Please be respectful and inclusive. We want this to be a welcoming community for
-everyone.
 
 ## Environment Variables
 
-Required variables in `.env`:
+See `.env.example` for all options. Key variables:
 
 ```bash
 # Server
@@ -294,22 +261,35 @@ NODE_ENV=development
 APP_URL=http://localhost:3000
 
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5433/wlt?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5433/db?schema=public"
 
-# JWT Secrets (generate with: openssl rand -base64 48)
-JWT_ACCESS_SECRET="your-secret-key"
-JWT_REFRESH_SECRET="your-refresh-secret-key"
+# JWT (generate with: openssl rand -base64 48)
+JWT_ACCESS_SECRET="your-access-secret"
+JWT_REFRESH_SECRET="your-refresh-secret"
 
-# Email (SMTP)
-SMTP_HOST="mail.example.com"
+# Email (leave empty in dev to log to console)
+SMTP_HOST=""
 SMTP_PORT="587"
-SMTP_SECURE="false"
-SMTP_USER="your-smtp-user"
-SMTP_PASS="your-smtp-password"
-SMTP_FROM="WeighTogether <noreply@example.com>"
+SMTP_USER=""
+SMTP_PASS=""
+
+# Homepage
+HOME_NEWS_COUNT="6"
 ```
 
-See `.env.example` for full configuration options.
+## Contributing
+
+We welcome contributions! WeighTogether is free and open source.
+
+### How to Contribute
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make changes and add tests
+4. Run `npm test` and `npm run lint`
+5. Submit a pull request
+
+Look for issues labeled `good first issue` to get started.
 
 ## License
 
@@ -317,4 +297,4 @@ MIT - See [LICENSE](./LICENSE) for details.
 
 ---
 
-**Built with TypeScript, Express, PostgreSQL, Prisma, and Alpine.js**
+**Built with TypeScript, Express, PostgreSQL, Prisma, and a commitment to simplicity.**
