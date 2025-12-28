@@ -25,7 +25,8 @@
                             </div>
                         <% } else { %>
                             <%
-                                const otherParticipant = conv.participants.find(p => p.user && p.user.id !== user.id);
+                                const currentUserId = user ? user.id : null;
+                                const otherParticipant = conv.participants.find(p => p.user && p.user.id !== currentUserId);
                                 const avatarUser = otherParticipant && otherParticipant.user ? otherParticipant.user : { username: 'Unknown', avatarUrl: null };
                             %>
                             <% if (avatarUser.avatarUrl) { %>
@@ -51,7 +52,7 @@
                             </div>
                             <% if (conv.messages && conv.messages.length > 0) { %>
                                 <p class="text-sm text-gray-500 truncate <%= conv.unreadCount > 0 ? 'text-gray-700' : '' %>">
-                                    <% if (conv.messages[0].sender && conv.messages[0].sender.id === user.id) { %>
+                                    <% if (conv.messages[0].sender && user && conv.messages[0].sender.id === user.id) { %>
                                         <span class="text-gray-400">You: </span>
                                     <% } %>
                                     <%= conv.messages[0].content %>

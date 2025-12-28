@@ -563,79 +563,85 @@
 
     <!-- Socket.io Client for Real-time Notifications -->
     <% if (typeof user !== 'undefined' && user) { %>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js" onerror="window.socketIOLoadFailed=true"></script>
     <script>
         // Real-time notification system
         (function() {
             let socket = null;
-            let reconnectAttempts = 0;
-            const maxReconnectAttempts = 5;
+            let socketEnabled = false;
 
             function connectSocket() {
-                // Connect to Socket.io server
-                socket = io({
-                    autoConnect: true,
-                    reconnection: true,
-                    reconnectionAttempts: maxReconnectAttempts,
-                    reconnectionDelay: 1000,
-                });
+                // Check if Socket.io loaded successfully
+                if (window.socketIOLoadFailed || typeof io === 'undefined') {
+                    console.log('Socket.io not available, real-time notifications disabled');
+                    return;
+                }
 
-                socket.on('connect', function() {
-                    console.log('Socket connected');
-                    // Authenticate with access token from cookie
-                    const accessToken = document.cookie
-                        .split('; ')
-                        .find(row => row.startsWith('accessToken='))
-                        ?.split('=')[1];
+                try {
+                    // Connect to Socket.io server with conservative settings
+                    socket = io({
+                        autoConnect: true,
+                        reconnection: true,
+                        reconnectionAttempts: 3,
+                        reconnectionDelay: 2000,
+                        reconnectionDelayMax: 10000,
+                        timeout: 10000,
+                        // Use polling first, then upgrade to websocket if available
+                        transports: ['polling', 'websocket'],
+                        upgrade: true,
+                    });
 
-                    if (accessToken) {
-                        socket.emit('authenticate', accessToken);
-                    }
-                });
+                    socket.on('connect', function() {
+                        socketEnabled = true;
+                        // Authenticate with access token from cookie
+                        const accessToken = document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('accessToken='))
+                            ?.split('=')[1];
 
-                socket.on('authenticated', function(data) {
-                    if (data.success) {
-                        console.log('Socket authenticated');
-                        reconnectAttempts = 0;
-                    } else {
-                        console.warn('Socket authentication failed:', data.error);
-                    }
-                });
+                        if (accessToken) {
+                            socket.emit('authenticate', accessToken);
+                        }
+                    });
 
-                socket.on('newMessage', function(data) {
-                    console.log('New message received:', data);
+                    socket.on('authenticated', function(data) {
+                        if (!data.success) {
+                            console.warn('Socket authentication failed');
+                        }
+                    });
 
-                    // Show toast notification
-                    if (window.toast) {
-                        const preview = data.message.content.length > 50
-                            ? data.message.content.substring(0, 50) + '...'
-                            : data.message.content;
-                        window.toast.info(
-                            `${data.conversationName}: ${preview}`,
-                            8000
-                        );
-                    }
+                    socket.on('newMessage', function(data) {
+                        // Show toast notification
+                        if (window.toast && data.message) {
+                            const preview = data.message.content && data.message.content.length > 50
+                                ? data.message.content.substring(0, 50) + '...'
+                                : (data.message.content || 'New message');
+                            window.toast.info(
+                                `${data.conversationName || 'Message'}: ${preview}`,
+                                8000
+                            );
+                        }
 
-                    // Update unread badge if available
-                    updateUnreadBadge();
+                        // Update unread badge if available
+                        updateUnreadBadge();
 
-                    // Dispatch custom event for other components
-                    window.dispatchEvent(new CustomEvent('wlt:newMessage', {
-                        detail: data
-                    }));
-                });
+                        // Dispatch custom event for other components
+                        window.dispatchEvent(new CustomEvent('wlt:newMessage', {
+                            detail: data
+                        }));
+                    });
 
-                socket.on('disconnect', function(reason) {
-                    console.log('Socket disconnected:', reason);
-                });
+                    socket.on('connect_error', function() {
+                        // Silently handle connection errors - don't spam console
+                        socketEnabled = false;
+                    });
 
-                socket.on('connect_error', function(error) {
-                    console.warn('Socket connection error:', error.message);
-                    reconnectAttempts++;
-                    if (reconnectAttempts >= maxReconnectAttempts) {
-                        console.log('Max reconnect attempts reached');
-                    }
-                });
+                    socket.on('disconnect', function() {
+                        socketEnabled = false;
+                    });
+                } catch (e) {
+                    console.log('Socket.io initialization failed');
+                }
             }
 
             // Update unread badge in navigation
