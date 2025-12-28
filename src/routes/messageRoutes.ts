@@ -15,6 +15,11 @@ router.post(
 	MessageController.newConversationValidation,
 	MessageController.createConversation
 );
+
+// API endpoints (must be before :conversationId routes)
+router.get("/unread-count", MessageController.getUnreadCount);
+
+// Conversation routes with :conversationId parameter
 router.get("/:conversationId", MessageController.showConversation);
 router.post(
 	"/:conversationId",
@@ -22,9 +27,6 @@ router.post(
 	MessageController.sendMessage
 );
 router.post("/:conversationId/read", MessageController.markAsRead);
-
-// API endpoints
-router.get("/unread-count", MessageController.getUnreadCount);
 
 // Message edit/delete (API-style for AJAX)
 router.put(

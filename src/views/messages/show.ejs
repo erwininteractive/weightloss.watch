@@ -77,7 +77,8 @@
                 let lastDate = null;
                 messages.forEach(function(msg) {
                     const msgDate = new Date(msg.createdAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-                    const isOwnMessage = msg.sender.id === currentUserId;
+                    const msgSender = msg.sender || { id: null, username: 'Unknown', avatarUrl: null };
+                    const isOwnMessage = msgSender.id === currentUserId;
             %>
                 <!-- Date Separator -->
                 <% if (lastDate !== msgDate) { %>
@@ -93,18 +94,18 @@
                 <div class="flex <%= isOwnMessage ? 'justify-end' : 'justify-start' %>">
                     <div class="flex gap-2 max-w-[80%] <%= isOwnMessage ? 'flex-row-reverse' : '' %>">
                         <% if (!isOwnMessage) { %>
-                            <% if (msg.sender.avatarUrl) { %>
-                                <img src="<%= msg.sender.avatarUrl %>" alt="<%= msg.sender.username %>" class="w-8 h-8 rounded-full object-cover shrink-0 self-end">
+                            <% if (msgSender.avatarUrl) { %>
+                                <img src="<%= msgSender.avatarUrl %>" alt="<%= msgSender.username %>" class="w-8 h-8 rounded-full object-cover shrink-0 self-end">
                             <% } else { %>
                                 <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-sm font-bold shrink-0 self-end">
-                                    <%= msg.sender.username.charAt(0).toUpperCase() %>
+                                    <%= msgSender.username.charAt(0).toUpperCase() %>
                                 </div>
                             <% } %>
                         <% } %>
 
                         <div class="<%= isOwnMessage ? 'bg-teal-600 text-white' : 'bg-white' %> rounded-2xl px-4 py-2 shadow-sm">
                             <% if (!isOwnMessage && conversation.isGroup) { %>
-                                <p class="text-xs font-medium text-teal-600 mb-1"><%= msg.sender.username %></p>
+                                <p class="text-xs font-medium text-teal-600 mb-1"><%= msgSender.username %></p>
                             <% } %>
                             <p class="<%= isOwnMessage ? 'text-white' : 'text-gray-800' %> whitespace-pre-wrap break-words"><%= msg.content %></p>
                             <p class="text-xs mt-1 <%= isOwnMessage ? 'text-teal-200' : 'text-gray-400' %>">

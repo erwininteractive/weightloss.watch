@@ -51,7 +51,7 @@
                             </div>
                             <% if (conv.messages && conv.messages.length > 0) { %>
                                 <p class="text-sm text-gray-500 truncate <%= conv.unreadCount > 0 ? 'text-gray-700' : '' %>">
-                                    <% if (conv.messages[0].sender.id === user.id) { %>
+                                    <% if (conv.messages[0].sender && conv.messages[0].sender.id === user.id) { %>
                                         <span class="text-gray-400">You: </span>
                                     <% } %>
                                     <%= conv.messages[0].content %>
