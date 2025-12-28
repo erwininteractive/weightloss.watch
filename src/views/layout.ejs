@@ -569,26 +569,27 @@
         (function() {
             let socket = null;
             let socketEnabled = false;
+            let socketDisabled = false; // Permanently disabled after failure
 
             function connectSocket() {
                 // Check if Socket.io loaded successfully
                 if (window.socketIOLoadFailed || typeof io === 'undefined') {
-                    console.log('Socket.io not available, real-time notifications disabled');
+                    return;
+                }
+
+                // Don't retry if we've already failed
+                if (socketDisabled) {
                     return;
                 }
 
                 try {
-                    // Connect to Socket.io server with conservative settings
+                    // Connect to Socket.io server - NO reconnection
+                    // If it fails once, we disable it to prevent console spam
                     socket = io({
                         autoConnect: true,
-                        reconnection: true,
-                        reconnectionAttempts: 3,
-                        reconnectionDelay: 2000,
-                        reconnectionDelayMax: 10000,
-                        timeout: 10000,
-                        // Use polling first, then upgrade to websocket if available
-                        transports: ['polling', 'websocket'],
-                        upgrade: true,
+                        reconnection: false, // Don't reconnect - if server is misconfigured, stop trying
+                        timeout: 5000,
+                        transports: ['polling'], // Only use polling - simpler and more reliable
                     });
 
                     socket.on('connect', function() {
@@ -606,7 +607,9 @@
 
                     socket.on('authenticated', function(data) {
                         if (!data.success) {
-                            console.warn('Socket authentication failed');
+                            // Auth failed, disable socket
+                            socketDisabled = true;
+                            socket.disconnect();
                         }
                     });
 
@@ -632,15 +635,19 @@
                     });
 
                     socket.on('connect_error', function() {
-                        // Silently handle connection errors - don't spam console
+                        // Connection failed - disable permanently to prevent spam
                         socketEnabled = false;
+                        socketDisabled = true;
+                        if (socket) {
+                            socket.disconnect();
+                        }
                     });
 
                     socket.on('disconnect', function() {
                         socketEnabled = false;
                     });
                 } catch (e) {
-                    console.log('Socket.io initialization failed');
+                    socketDisabled = true;
                 }
             }
 
