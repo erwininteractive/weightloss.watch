@@ -44,26 +44,41 @@ export class SocketService {
 	 * Handle new socket connection
 	 */
 	private static handleConnection(socket: Socket): void {
-		let userId: string | null = null;
+		// Get userId from handshake auth (sent by client during connection)
+		const userId = socket.handshake.auth?.userId as string | undefined;
 
-		// Authenticate on connection via token in handshake
+		if (userId) {
+			// Add socket to user's set of connections
+			if (!this.userSockets.has(userId)) {
+				this.userSockets.set(userId, new Set());
+			}
+			this.userSockets.get(userId)!.add(socket.id);
+
+			// Join user-specific room
+			socket.join(`user:${userId}`);
+
+			socket.emit("authenticated", { success: true });
+			console.log(`User ${userId} connected (socket: ${socket.id})`);
+		}
+
+		// Also support legacy token-based auth
 		socket.on("authenticate", async (token: string) => {
 			try {
 				const payload = AuthService.verifyAccessToken(token);
-				userId = payload.sub;
+				const authUserId = payload.sub;
 
 				// Add socket to user's set of connections
-				if (!this.userSockets.has(userId)) {
-					this.userSockets.set(userId, new Set());
+				if (!this.userSockets.has(authUserId)) {
+					this.userSockets.set(authUserId, new Set());
 				}
-				this.userSockets.get(userId)!.add(socket.id);
+				this.userSockets.get(authUserId)!.add(socket.id);
 
 				// Join user-specific room
-				socket.join(`user:${userId}`);
+				socket.join(`user:${authUserId}`);
 
 				socket.emit("authenticated", { success: true });
 				console.log(
-					`User ${userId} connected (socket: ${socket.id})`
+					`User ${authUserId} connected via token (socket: ${socket.id})`
 				);
 			} catch (error) {
 				socket.emit("authenticated", {

@@ -570,6 +570,7 @@
             let socket = null;
             let socketEnabled = false;
             let socketDisabled = false; // Permanently disabled after failure
+            const currentUserId = '<%= user.id %>';
 
             function connectSocket() {
                 // Check if Socket.io loaded successfully
@@ -583,7 +584,7 @@
                 }
 
                 try {
-                    // Connect to Socket.io server
+                    // Connect to Socket.io server with auth
                     socket = io({
                         autoConnect: true,
                         reconnection: true,
@@ -591,19 +592,13 @@
                         reconnectionDelay: 1000,
                         timeout: 10000,
                         transports: ['polling', 'websocket'],
+                        auth: {
+                            userId: currentUserId
+                        }
                     });
 
                     socket.on('connect', function() {
                         socketEnabled = true;
-                        // Authenticate with access token from cookie
-                        const accessToken = document.cookie
-                            .split('; ')
-                            .find(row => row.startsWith('accessToken='))
-                            ?.split('=')[1];
-
-                        if (accessToken) {
-                            socket.emit('authenticate', accessToken);
-                        }
                     });
 
                     socket.on('authenticated', function(data) {
