@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import '../src/config/env';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -193,6 +191,78 @@ const achievements = [
         description: 'Maintained goal weight for 90 days',
         iconUrl: '🎯',
         points: 400,
+    },
+
+    // Hidden/Secret Achievements
+    {
+        name: 'Night Owl',
+        description: 'Logged weight between midnight and 4 AM',
+        iconUrl: '🦉',
+        points: 50,
+        isHidden: true,
+    },
+    {
+        name: 'Early Bird',
+        description: 'Logged weight between 5 AM and 6 AM',
+        iconUrl: '🐦',
+        points: 50,
+        isHidden: true,
+    },
+    {
+        name: 'New Year Resolution',
+        description: 'Logged weight on January 1st',
+        iconUrl: '🎆',
+        points: 100,
+        isHidden: true,
+    },
+    {
+        name: 'Holiday Spirit',
+        description: 'Logged weight on December 25th',
+        iconUrl: '🎄',
+        points: 100,
+        isHidden: true,
+    },
+    {
+        name: 'Leap of Faith',
+        description: 'Logged weight on February 29th',
+        iconUrl: '🐸',
+        points: 200,
+        isHidden: true,
+    },
+    {
+        name: 'Precision Master',
+        description: 'Logged a weight that ends in .00',
+        iconUrl: '🎯',
+        points: 25,
+        isHidden: true,
+    },
+    {
+        name: 'Lucky Number',
+        description: 'Logged weight 7 times in a single week',
+        iconUrl: '🍀',
+        points: 75,
+        isHidden: true,
+    },
+    {
+        name: 'Dedication',
+        description: 'Logged weight every day for a full month',
+        iconUrl: '📆',
+        points: 300,
+        isHidden: true,
+    },
+    {
+        name: 'Milestone Marker',
+        description: 'Reached exactly a 10 lb milestone (180, 170, 160, etc.)',
+        iconUrl: '🏁',
+        points: 50,
+        isHidden: true,
+    },
+    {
+        name: 'Underdog',
+        description: 'Lost weight after gaining for 3 consecutive days',
+        iconUrl: '🐕',
+        points: 75,
+        isHidden: true,
     },
 ];
 

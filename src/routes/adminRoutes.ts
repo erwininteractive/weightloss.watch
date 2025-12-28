@@ -5,25 +5,27 @@ import { requireAdmin } from "../middleware/adminAuth";
 
 const router = Router();
 
-// All admin routes require authentication and admin privileges
-router.use(webAuthenticate);
-router.use(requireAdmin);
-
 // User management
-router.get("/admin/users", AdminController.listUsers);
-router.get("/admin/users/:userId", AdminController.viewUser);
+router.get("/admin/users", webAuthenticate, requireAdmin, AdminController.listUsers);
+router.get("/admin/users/:userId", webAuthenticate, requireAdmin, AdminController.viewUser);
 router.post(
 	"/admin/users/:userId/reset-password",
+	webAuthenticate,
+	requireAdmin,
 	AdminController.resetPasswordValidation,
 	AdminController.resetPassword,
 );
-router.post("/admin/users/:userId/toggle-admin", AdminController.toggleAdmin);
+router.post("/admin/users/:userId/toggle-admin", webAuthenticate, requireAdmin, AdminController.toggleAdmin);
 router.post(
 	"/admin/users/:userId/toggle-active",
+	webAuthenticate,
+	requireAdmin,
 	AdminController.toggleActive,
 );
 router.post(
 	"/admin/users/:userId/resend-verification",
+	webAuthenticate,
+	requireAdmin,
 	AdminController.resendVerification,
 );
 

@@ -341,11 +341,18 @@ export class WeightController {
 						await AchievementService.checkStreakAchievements(userId);
 					const engagementAchievements =
 						await AchievementService.checkEngagementAchievements(userId);
+					const hiddenAchievements =
+						await AchievementService.checkHiddenAchievements(
+							userId,
+							entryData.weight,
+							entryData.recordedAt
+						);
 
 					unlockedAchievements.push(
 						...weightAchievements,
 						...streakAchievements,
 						...engagementAchievements,
+						...hiddenAchievements,
 					);
 				} catch (error) {
 					// Log error but don't fail the request

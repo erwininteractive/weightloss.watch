@@ -4,20 +4,19 @@ import { webAuthenticate } from "../middleware/webAuth";
 
 const router = Router();
 
-// Apply auth middleware to all settings routes
-router.use(webAuthenticate);
-
-router.get("/settings", SettingsController.index);
+router.get("/settings", webAuthenticate, SettingsController.index);
 router.post(
 	"/settings/preferences",
+	webAuthenticate,
 	SettingsController.preferencesValidation,
 	SettingsController.updatePreferences,
 );
 router.post(
 	"/settings/password",
+	webAuthenticate,
 	SettingsController.passwordValidation,
 	SettingsController.changePassword,
 );
-router.post("/settings/delete-account", SettingsController.deleteAccount);
+router.post("/settings/delete-account", webAuthenticate, SettingsController.deleteAccount);
 
 export default router;

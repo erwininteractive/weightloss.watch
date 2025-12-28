@@ -133,6 +133,76 @@ export class NewsService {
 	}
 
 	/**
+	 * Get placeholder articles for development/testing
+	 */
+	private static getPlaceholderArticles(limit: number): NewsArticle[] {
+		const placeholders: NewsArticle[] = [
+			{
+				id: "placeholder-1",
+				title: "10 Science-Backed Ways to Boost Your Metabolism",
+				description: "Discover proven strategies to increase your metabolic rate and support your weight loss journey with these expert-recommended tips.",
+				url: "#",
+				imageUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop",
+				source: { id: "health-daily", name: "Health Daily" },
+				publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+				category: "weight-loss",
+			},
+			{
+				id: "placeholder-2",
+				title: "The Benefits of Strength Training for Weight Loss",
+				description: "Learn why building muscle is key to long-term weight management and how to get started with resistance training.",
+				url: "#",
+				imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop",
+				source: { id: "fitness-magazine", name: "Fitness Magazine" },
+				publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+				category: "fitness",
+			},
+			{
+				id: "placeholder-3",
+				title: "Nutrition Myths Debunked: What Science Really Says",
+				description: "Separate fact from fiction with this evidence-based guide to common nutrition misconceptions.",
+				url: "#",
+				imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
+				source: { id: "nutrition-science", name: "Nutrition Science" },
+				publishedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+				category: "nutrition",
+			},
+			{
+				id: "placeholder-4",
+				title: "How Sleep Affects Your Weight Loss Goals",
+				description: "Understanding the crucial connection between quality sleep and successful weight management.",
+				url: "#",
+				imageUrl: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&h=300&fit=crop",
+				source: { id: "wellness-today", name: "Wellness Today" },
+				publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+				category: "wellness",
+			},
+			{
+				id: "placeholder-5",
+				title: "Mindful Eating: A Sustainable Approach to Weight Control",
+				description: "Explore how mindfulness techniques can transform your relationship with food and support lasting change.",
+				url: "#",
+				imageUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=crop",
+				source: { id: "mind-body-health", name: "Mind Body Health" },
+				publishedAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
+				category: "wellness",
+			},
+			{
+				id: "placeholder-6",
+				title: "Best Cardio Exercises for Maximum Fat Burn",
+				description: "Compare different cardio workouts and find the most effective options for your fitness level and goals.",
+				url: "#",
+				imageUrl: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=400&h=300&fit=crop",
+				source: { id: "exercise-weekly", name: "Exercise Weekly" },
+				publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+				category: "exercise",
+			},
+		];
+
+		return placeholders.slice(0, limit);
+	}
+
+	/**
 	 * Fetch news articles from GNews API (with caching)
 	 */
 	static async fetchNews(
@@ -140,12 +210,12 @@ export class NewsService {
 	): Promise<NewsFetchResult> {
 		const { category, limit = 10 } = options;
 
-		// If API not configured, return empty results
+		// If API not configured, return placeholder articles for development
 		if (!this.isConfigured()) {
-			console.warn("GNews API key not configured. Set GNEWS_API_KEY in .env");
+			const articles = this.getPlaceholderArticles(limit);
 			return {
-				articles: [],
-				totalResults: 0,
+				articles,
+				totalResults: articles.length,
 				page: 1,
 				hasMore: false,
 			};

@@ -2,6 +2,7 @@ import prisma from './database';
 
 export interface UnlockedAchievement {
     id: string;
+    userAchievementId?: string;
     name: string;
     description: string;
     iconUrl: string | null;
@@ -357,12 +358,140 @@ export class AchievementService {
     }
 
     /**
+     * Check and award hidden/secret achievements based on weight entry
+     */
+    static async checkHiddenAchievements(
+        userId: string,
+        weight: number,
+        recordedAt: Date
+    ): Promise<UnlockedAchievement[]> {
+        const unlocked: UnlockedAchievement[] = [];
+        const hour = recordedAt.getHours();
+        const month = recordedAt.getMonth();
+        const day = recordedAt.getDate();
+        const year = recordedAt.getFullYear();
+
+        // Night Owl - logged between midnight and 4 AM
+        if (hour >= 0 && hour < 4) {
+            const achievement = await this.awardAchievement(userId, 'Night Owl');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Early Bird - logged between 5 AM and 6 AM
+        if (hour >= 5 && hour < 6) {
+            const achievement = await this.awardAchievement(userId, 'Early Bird');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // New Year Resolution - logged on January 1st
+        if (month === 0 && day === 1) {
+            const achievement = await this.awardAchievement(userId, 'New Year Resolution');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Holiday Spirit - logged on December 25th
+        if (month === 11 && day === 25) {
+            const achievement = await this.awardAchievement(userId, 'Holiday Spirit');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Leap of Faith - logged on February 29th
+        if (month === 1 && day === 29) {
+            const achievement = await this.awardAchievement(userId, 'Leap of Faith');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Precision Master - weight ends in .00
+        if (weight % 1 === 0) {
+            const achievement = await this.awardAchievement(userId, 'Precision Master');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Milestone Marker - weight is exactly a 10 lb milestone
+        if (weight % 10 === 0 && weight >= 100 && weight <= 300) {
+            const achievement = await this.awardAchievement(userId, 'Milestone Marker');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Lucky Number - logged 7 times in a single week
+        const weekStart = new Date(recordedAt);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+
+        const weekEntries = await prisma.weightEntry.count({
+            where: {
+                userId,
+                recordedAt: {
+                    gte: weekStart,
+                    lt: weekEnd,
+                },
+            },
+        });
+
+        if (weekEntries >= 7) {
+            const achievement = await this.awardAchievement(userId, 'Lucky Number');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Dedication - logged every day for a full month
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        const daysInMonth = monthEnd.getDate();
+
+        const monthEntries = await prisma.weightEntry.findMany({
+            where: {
+                userId,
+                recordedAt: {
+                    gte: monthStart,
+                    lte: monthEnd,
+                },
+            },
+            select: { recordedAt: true },
+        });
+
+        const uniqueDays = new Set(
+            monthEntries.map((e) => e.recordedAt.toDateString())
+        );
+
+        if (uniqueDays.size >= daysInMonth) {
+            const achievement = await this.awardAchievement(userId, 'Dedication');
+            if (achievement) unlocked.push(achievement);
+        }
+
+        // Underdog - lost weight after gaining for 3 consecutive days
+        const recentEntries = await prisma.weightEntry.findMany({
+            where: { userId },
+            orderBy: { recordedAt: 'desc' },
+            take: 5,
+        });
+
+        if (recentEntries.length >= 5) {
+            const weights = recentEntries.map((e) => e.weight);
+            // Check if: today < yesterday (lost), but yesterday > day before > 2 days ago (3 gains)
+            if (
+                weights[0] < weights[1] &&
+                weights[1] > weights[2] &&
+                weights[2] > weights[3] &&
+                weights[3] > weights[4]
+            ) {
+                const achievement = await this.awardAchievement(userId, 'Underdog');
+                if (achievement) unlocked.push(achievement);
+            }
+        }
+
+        return unlocked;
+    }
+
+    /**
      * Get all achievements for a user (unlocked + progress on locked)
      */
     static async getUserAchievements(userId: string): Promise<{
         unlocked: UnlockedAchievement[];
         locked: AchievementProgress[];
         totalPoints: number;
+        hiddenCount: number;
     }> {
         // Get unlocked achievements
         const unlockedAchievements = await prisma.userAchievement.findMany({
@@ -373,6 +502,7 @@ export class AchievementService {
 
         const unlocked = unlockedAchievements.map((ua) => ({
             id: ua.achievement.id,
+            userAchievementId: ua.id,
             name: ua.achievement.name,
             description: ua.achievement.description,
             iconUrl: ua.achievement.iconUrl,
@@ -382,8 +512,10 @@ export class AchievementService {
 
         const totalPoints = unlocked.reduce((sum, a) => sum + a.points, 0);
 
-        // Get all achievements
-        const allAchievements = await prisma.achievement.findMany();
+        // Get all visible achievements (exclude hidden ones from locked list)
+        const allAchievements = await prisma.achievement.findMany({
+            where: { isHidden: false },
+        });
 
         // Calculate progress for locked achievements
         const locked: AchievementProgress[] = [];
@@ -408,7 +540,12 @@ export class AchievementService {
             }
         }
 
-        return { unlocked, locked, totalPoints };
+        // Count hidden achievements for mystery display
+        const hiddenCount = await prisma.achievement.count({
+            where: { isHidden: true },
+        });
+
+        return { unlocked, locked, totalPoints, hiddenCount };
     }
 
     /**
@@ -493,5 +630,72 @@ export class AchievementService {
         const percentage = Math.min(100, Math.round((current / target) * 100));
 
         return { current, target, percentage };
+    }
+
+    /**
+     * Get achievement leaderboard - users ranked by total points
+     */
+    static async getLeaderboard(limit = 50): Promise<{
+        rank: number;
+        user: {
+            id: string;
+            username: string;
+            displayName: string | null;
+            avatarUrl: string | null;
+        };
+        totalPoints: number;
+        achievementCount: number;
+    }[]> {
+        // Get all users with their achievements
+        const usersWithAchievements = await prisma.user.findMany({
+            where: {
+                isActive: true,
+                deletedAt: null,
+                profilePublic: true,
+            },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatarUrl: true,
+                achievements: {
+                    select: {
+                        achievement: {
+                            select: {
+                                points: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        // Calculate total points for each user
+        const leaderboard = usersWithAchievements
+            .map((user) => {
+                const totalPoints = user.achievements.reduce(
+                    (sum, ua) => sum + ua.achievement.points,
+                    0
+                );
+                return {
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        displayName: user.displayName,
+                        avatarUrl: user.avatarUrl,
+                    },
+                    totalPoints,
+                    achievementCount: user.achievements.length,
+                };
+            })
+            .filter((entry) => entry.totalPoints > 0)
+            .sort((a, b) => b.totalPoints - a.totalPoints)
+            .slice(0, limit)
+            .map((entry, index) => ({
+                rank: index + 1,
+                ...entry,
+            }));
+
+        return leaderboard;
     }
 }

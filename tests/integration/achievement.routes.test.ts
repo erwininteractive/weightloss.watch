@@ -315,6 +315,234 @@ describe("Achievement Routes", () => {
 		});
 	});
 
+	describe("GET /achievements/leaderboard", () => {
+		it("should display leaderboard without authentication", async () => {
+			const user = await createTestUser({ profilePublic: true });
+			const achievement = await createTestAchievement({
+				name: "Leaderboard Test",
+				points: 100,
+			});
+			await createTestUserAchievement(user.id, achievement.id);
+
+			const response = await request(app).get("/achievements/leaderboard");
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("Achievement Leaderboard");
+			expect(response.text).toContain("100"); // Points
+		});
+
+		it("should rank users by total points", async () => {
+			const user1 = await createTestUser({
+				profilePublic: true,
+				displayName: "First Place",
+			});
+			const user2 = await createTestUser({
+				profilePublic: true,
+				displayName: "Second Place",
+			});
+
+			const ach1 = await createTestAchievement({ points: 100 });
+			const ach2 = await createTestAchievement({ points: 50 });
+
+			await createTestUserAchievement(user1.id, ach1.id);
+			await createTestUserAchievement(user2.id, ach2.id);
+
+			const response = await request(app).get("/achievements/leaderboard");
+
+			expect(response.status).toBe(200);
+			// First place should appear before second place in the HTML
+			const firstPlaceIndex = response.text.indexOf("First Place");
+			const secondPlaceIndex = response.text.indexOf("Second Place");
+			expect(firstPlaceIndex).toBeLessThan(secondPlaceIndex);
+		});
+
+		it("should highlight current user if authenticated", async () => {
+			const { user, tokens } = await createAuthenticatedUser({
+				profilePublic: true,
+			});
+			const achievement = await createTestAchievement({ points: 50 });
+			await createTestUserAchievement(user.id, achievement.id);
+
+			const response = await request(app)
+				.get("/achievements/leaderboard")
+				.set("Cookie", [
+					`accessToken=${tokens.accessToken}`,
+					`refreshToken=${tokens.refreshToken}`,
+				]);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("(You)");
+		});
+
+		it("should show user rank card when authenticated", async () => {
+			const { user, tokens } = await createAuthenticatedUser({
+				profilePublic: true,
+			});
+			const achievement = await createTestAchievement({ points: 50 });
+			await createTestUserAchievement(user.id, achievement.id);
+
+			const response = await request(app)
+				.get("/achievements/leaderboard")
+				.set("Cookie", [
+					`accessToken=${tokens.accessToken}`,
+					`refreshToken=${tokens.refreshToken}`,
+				]);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("Your Rank");
+		});
+
+		it("should not show private profiles on leaderboard", async () => {
+			const privateUser = await createTestUser({
+				profilePublic: false,
+				displayName: "Private User",
+			});
+			const achievement = await createTestAchievement({ points: 100 });
+			await createTestUserAchievement(privateUser.id, achievement.id);
+
+			const response = await request(app).get("/achievements/leaderboard");
+
+			expect(response.status).toBe(200);
+			expect(response.text).not.toContain("Private User");
+		});
+	});
+
+	describe("GET /achievements/share/:achievementId/:odataId", () => {
+		it("should display shared achievement for public profile", async () => {
+			const user = await createTestUser({
+				profilePublic: true,
+				displayName: "Sharer",
+			});
+			const achievement = await createTestAchievement({
+				name: "Shared Achievement",
+				points: 50,
+			});
+			const userAchievement = await createTestUserAchievement(
+				user.id,
+				achievement.id,
+			);
+
+			const response = await request(app).get(
+				`/achievements/share/${achievement.id}/${userAchievement.id}`,
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("Shared Achievement");
+			expect(response.text).toContain("Sharer");
+			expect(response.text).toContain("50 points");
+		});
+
+		it("should return 403 for private profile", async () => {
+			const user = await createTestUser({
+				profilePublic: false,
+				displayName: "Private User",
+			});
+			const achievement = await createTestAchievement({
+				name: "Private Achievement",
+			});
+			const userAchievement = await createTestUserAchievement(
+				user.id,
+				achievement.id,
+			);
+
+			const response = await request(app).get(
+				`/achievements/share/${achievement.id}/${userAchievement.id}`,
+			);
+
+			expect(response.status).toBe(403);
+			expect(response.text).toContain("Private Profile");
+		});
+
+		it("should return 404 for non-existent achievement", async () => {
+			const response = await request(app).get(
+				"/achievements/share/fake-id/fake-ua-id",
+			);
+
+			expect(response.status).toBe(404);
+			expect(response.text).toContain("Achievement Not Found");
+		});
+
+		it("should show share buttons on page", async () => {
+			const user = await createTestUser({ profilePublic: true });
+			const achievement = await createTestAchievement({
+				name: "Shareable Achievement",
+			});
+			const userAchievement = await createTestUserAchievement(
+				user.id,
+				achievement.id,
+			);
+
+			const response = await request(app).get(
+				`/achievements/share/${achievement.id}/${userAchievement.id}`,
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("twitter.com/intent/tweet");
+			expect(response.text).toContain("facebook.com/sharer");
+			expect(response.text).toContain("Copy Link");
+		});
+	});
+
+	describe("Hidden achievements on achievements page", () => {
+		it("should show mystery achievements section", async () => {
+			const { tokens } = await createAuthenticatedUser();
+			await createTestAchievement({ name: "Visible", isHidden: false });
+			await createTestAchievement({ name: "Hidden 1", isHidden: true });
+			await createTestAchievement({ name: "Hidden 2", isHidden: true });
+
+			const response = await request(app)
+				.get("/achievements")
+				.set("Cookie", [
+					`accessToken=${tokens.accessToken}`,
+					`refreshToken=${tokens.refreshToken}`,
+				]);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("Mystery Achievements");
+			expect(response.text).toContain("2 Secret Achievement");
+		});
+
+		it("should not show hidden achievements in locked list", async () => {
+			const { tokens } = await createAuthenticatedUser();
+			await createTestAchievement({ name: "Visible Achievement" });
+			await createTestAchievement({
+				name: "Hidden Achievement",
+				isHidden: true,
+			});
+
+			const response = await request(app)
+				.get("/achievements")
+				.set("Cookie", [
+					`accessToken=${tokens.accessToken}`,
+					`refreshToken=${tokens.refreshToken}`,
+				]);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("Visible Achievement");
+			expect(response.text).not.toContain("Hidden Achievement");
+		});
+
+		it("should show unlocked hidden achievements with share button", async () => {
+			const { user, tokens } = await createAuthenticatedUser();
+			const hiddenAchievement = await createTestAchievement({
+				name: "Earned Hidden Achievement",
+				isHidden: true,
+			});
+			await createTestUserAchievement(user.id, hiddenAchievement.id);
+
+			const response = await request(app)
+				.get("/achievements")
+				.set("Cookie", [
+					`accessToken=${tokens.accessToken}`,
+					`refreshToken=${tokens.refreshToken}`,
+				]);
+
+			expect(response.status).toBe(200);
+			expect(response.text).toContain("Earned Hidden Achievement");
+			expect(response.text).toContain("/achievements/share/");
+		});
+	});
+
 	describe("Achievement auto-award integration", () => {
 		it("should auto-award achievements when logging weight", async () => {
 			const { user, tokens } = await createAuthenticatedUser();

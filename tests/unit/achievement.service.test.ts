@@ -401,6 +401,339 @@ describe("AchievementService", () => {
 		});
 	});
 
+	describe("checkHiddenAchievements", () => {
+		it("should award 'Night Owl' for logging between midnight and 4 AM", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Night Owl", isHidden: true });
+
+			const recordedAt = new Date();
+			recordedAt.setHours(2, 0, 0, 0); // 2 AM
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				200,
+				recordedAt,
+			);
+
+			expect(unlocked).toHaveLength(1);
+			expect(unlocked[0].name).toBe("Night Owl");
+		});
+
+		it("should award 'Early Bird' for logging between 5 AM and 6 AM", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Early Bird", isHidden: true });
+
+			const recordedAt = new Date();
+			recordedAt.setHours(5, 30, 0, 0); // 5:30 AM
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				200,
+				recordedAt,
+			);
+
+			expect(unlocked).toHaveLength(1);
+			expect(unlocked[0].name).toBe("Early Bird");
+		});
+
+		it("should award 'Precision Master' for weight ending in .00", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Precision Master", isHidden: true });
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				180, // Whole number
+				new Date(),
+			);
+
+			expect(unlocked).toHaveLength(1);
+			expect(unlocked[0].name).toBe("Precision Master");
+		});
+
+		it("should not award 'Precision Master' for weight with decimals", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Precision Master", isHidden: true });
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				180.5, // Has decimal
+				new Date(),
+			);
+
+			expect(unlocked).toHaveLength(0);
+		});
+
+		it("should award 'Milestone Marker' for weight at 10 lb milestone", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Milestone Marker", isHidden: true });
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				180, // Exactly 180
+				new Date(),
+			);
+
+			expect(unlocked).toHaveLength(1);
+			expect(unlocked[0].name).toBe("Milestone Marker");
+		});
+
+		it("should award 'New Year Resolution' for logging on January 1st", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "New Year Resolution", isHidden: true });
+
+			const recordedAt = new Date();
+			recordedAt.setMonth(0); // January
+			recordedAt.setDate(1); // 1st
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				200.5, // Non-round weight to avoid other achievements
+				recordedAt,
+			);
+
+			const names = unlocked.map((a) => a.name);
+			expect(names).toContain("New Year Resolution");
+		});
+
+		it("should award 'Lucky Number' for 7 entries in a week", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Lucky Number", isHidden: true });
+
+			// Calculate the start of the current week (Sunday)
+			const now = new Date();
+			const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+			const weekStart = new Date(now);
+			weekStart.setDate(now.getDate() - dayOfWeek);
+			weekStart.setHours(12, 0, 0, 0); // Noon to avoid timezone issues
+
+			// Create 7 entries within the same week (Sunday through Saturday)
+			for (let i = 0; i < 7; i++) {
+				const entryDate = new Date(weekStart);
+				entryDate.setDate(weekStart.getDate() + i);
+				await createTestWeightEntry(user.id, {
+					weight: 200,
+					recordedAt: entryDate,
+				});
+			}
+
+			// The 7th entry (Saturday) triggers the check
+			const saturday = new Date(weekStart);
+			saturday.setDate(weekStart.getDate() + 6);
+
+			// Check if achievement is awarded after logging on Saturday
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				199.5, // Non-round weight
+				saturday,
+			);
+
+			const names = unlocked.map((a) => a.name);
+			expect(names).toContain("Lucky Number");
+		});
+
+		it("should award 'Underdog' for losing weight after 3 consecutive gains", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Underdog", isHidden: true });
+
+			const now = new Date();
+			// Create 4 entries showing gaining weight, then losing
+			await createTestWeightEntry(user.id, {
+				weight: 195,
+				recordedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000),
+			});
+			await createTestWeightEntry(user.id, {
+				weight: 196,
+				recordedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
+			});
+			await createTestWeightEntry(user.id, {
+				weight: 197,
+				recordedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+			});
+			await createTestWeightEntry(user.id, {
+				weight: 198,
+				recordedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
+			});
+			// Current entry will be created, showing weight loss
+			await createTestWeightEntry(user.id, {
+				weight: 197.5,
+				recordedAt: now,
+			});
+
+			const unlocked = await AchievementService.checkHiddenAchievements(
+				user.id,
+				197.5,
+				now,
+			);
+
+			const names = unlocked.map((a) => a.name);
+			expect(names).toContain("Underdog");
+		});
+	});
+
+	describe("getUserAchievements - hidden achievements", () => {
+		it("should not include hidden achievements in locked list", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Visible Achievement" });
+			await createTestAchievement({
+				name: "Hidden Achievement",
+				isHidden: true,
+			});
+
+			const result = await AchievementService.getUserAchievements(user.id);
+
+			expect(result.locked).toHaveLength(1);
+			expect(result.locked[0].achievement.name).toBe("Visible Achievement");
+		});
+
+		it("should include hidden achievement count", async () => {
+			const user = await createTestUser();
+			await createTestAchievement({ name: "Visible 1" });
+			await createTestAchievement({ name: "Hidden 1", isHidden: true });
+			await createTestAchievement({ name: "Hidden 2", isHidden: true });
+
+			const result = await AchievementService.getUserAchievements(user.id);
+
+			expect(result.hiddenCount).toBe(2);
+		});
+
+		it("should show hidden achievements in unlocked list once earned", async () => {
+			const user = await createTestUser();
+			const hiddenAchievement = await createTestAchievement({
+				name: "Hidden But Earned",
+				isHidden: true,
+				points: 50,
+			});
+			await createTestUserAchievement(user.id, hiddenAchievement.id);
+
+			const result = await AchievementService.getUserAchievements(user.id);
+
+			expect(result.unlocked).toHaveLength(1);
+			expect(result.unlocked[0].name).toBe("Hidden But Earned");
+			expect(result.totalPoints).toBe(50);
+		});
+
+		it("should include userAchievementId in unlocked achievements", async () => {
+			const user = await createTestUser();
+			const achievement = await createTestAchievement({ name: "With ID" });
+			const userAchievement = await createTestUserAchievement(
+				user.id,
+				achievement.id,
+			);
+
+			const result = await AchievementService.getUserAchievements(user.id);
+
+			expect(result.unlocked[0].userAchievementId).toBe(userAchievement.id);
+		});
+	});
+
+	describe("getLeaderboard", () => {
+		it("should return users ranked by total points", async () => {
+			const user1 = await createTestUser({ profilePublic: true });
+			const user2 = await createTestUser({ profilePublic: true });
+			const user3 = await createTestUser({ profilePublic: true });
+
+			const ach1 = await createTestAchievement({
+				name: "Bronze",
+				points: 10,
+			});
+			const ach2 = await createTestAchievement({
+				name: "Silver",
+				points: 50,
+			});
+			const ach3 = await createTestAchievement({
+				name: "Gold",
+				points: 100,
+			});
+
+			// User 1: 10 points
+			await createTestUserAchievement(user1.id, ach1.id);
+			// User 2: 60 points (10 + 50)
+			await createTestUserAchievement(user2.id, ach1.id);
+			await createTestUserAchievement(user2.id, ach2.id);
+			// User 3: 110 points (10 + 100)
+			await createTestUserAchievement(user3.id, ach1.id);
+			await createTestUserAchievement(user3.id, ach3.id);
+
+			const leaderboard = await AchievementService.getLeaderboard();
+
+			expect(leaderboard).toHaveLength(3);
+			expect(leaderboard[0].rank).toBe(1);
+			expect(leaderboard[0].user.id).toBe(user3.id);
+			expect(leaderboard[0].totalPoints).toBe(110);
+
+			expect(leaderboard[1].rank).toBe(2);
+			expect(leaderboard[1].user.id).toBe(user2.id);
+			expect(leaderboard[1].totalPoints).toBe(60);
+
+			expect(leaderboard[2].rank).toBe(3);
+			expect(leaderboard[2].user.id).toBe(user1.id);
+			expect(leaderboard[2].totalPoints).toBe(10);
+		});
+
+		it("should exclude private profiles from leaderboard", async () => {
+			const publicUser = await createTestUser({ profilePublic: true });
+			const privateUser = await createTestUser({ profilePublic: false });
+
+			const achievement = await createTestAchievement({
+				name: "Test",
+				points: 100,
+			});
+
+			await createTestUserAchievement(publicUser.id, achievement.id);
+			await createTestUserAchievement(privateUser.id, achievement.id);
+
+			const leaderboard = await AchievementService.getLeaderboard();
+
+			expect(leaderboard).toHaveLength(1);
+			expect(leaderboard[0].user.id).toBe(publicUser.id);
+		});
+
+		it("should exclude users with 0 points from leaderboard", async () => {
+			const userWithPoints = await createTestUser({ profilePublic: true });
+			await createTestUser({ profilePublic: true }); // User without achievements
+
+			const achievement = await createTestAchievement({ points: 50 });
+			await createTestUserAchievement(userWithPoints.id, achievement.id);
+
+			const leaderboard = await AchievementService.getLeaderboard();
+
+			expect(leaderboard).toHaveLength(1);
+			expect(leaderboard[0].user.id).toBe(userWithPoints.id);
+		});
+
+		it("should respect limit parameter", async () => {
+			// Create 5 users with achievements
+			for (let i = 0; i < 5; i++) {
+				const user = await createTestUser({ profilePublic: true });
+				const achievement = await createTestAchievement({
+					points: (i + 1) * 10,
+				});
+				await createTestUserAchievement(user.id, achievement.id);
+			}
+
+			const leaderboard = await AchievementService.getLeaderboard(3);
+
+			expect(leaderboard).toHaveLength(3);
+		});
+
+		it("should include achievement count for each user", async () => {
+			const user = await createTestUser({ profilePublic: true });
+
+			const ach1 = await createTestAchievement({ points: 10 });
+			const ach2 = await createTestAchievement({ points: 20 });
+			const ach3 = await createTestAchievement({ points: 30 });
+
+			await createTestUserAchievement(user.id, ach1.id);
+			await createTestUserAchievement(user.id, ach2.id);
+			await createTestUserAchievement(user.id, ach3.id);
+
+			const leaderboard = await AchievementService.getLeaderboard();
+
+			expect(leaderboard[0].achievementCount).toBe(3);
+			expect(leaderboard[0].totalPoints).toBe(60);
+		});
+	});
+
 	describe("calculateProgress", () => {
 		it("should calculate progress for weight loss achievements", async () => {
 			const user = await createTestUser();

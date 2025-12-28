@@ -376,6 +376,7 @@ model Achievement {
 	description String
 	iconUrl     String?
 	points      Int      @default(0)
+	isHidden    Boolean  @default(false)
 
 	createdAt   DateTime @default(now())
 

@@ -129,6 +129,7 @@ export async function createTestAchievement(
 		description?: string;
 		iconUrl?: string;
 		points?: number;
+		isHidden?: boolean;
 	} = {},
 ) {
 	const defaultName = `Test Achievement ${Date.now()}`;
@@ -139,6 +140,7 @@ export async function createTestAchievement(
 			description: overrides.description || "A test achievement",
 			iconUrl: overrides.iconUrl || "🏆",
 			points: overrides.points || 10,
+			isHidden: overrides.isHidden || false,
 		},
 	});
 }
