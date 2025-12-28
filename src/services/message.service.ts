@@ -560,4 +560,198 @@ export class MessageService {
 
 		return otherParticipant?.user.username || "Unknown User";
 	}
+
+	/**
+	 * Get or create a team conversation
+	 * Creates a group conversation linked to the team with all members as participants
+	 */
+	static async getOrCreateTeamConversation(
+		teamId: string,
+		teamName: string,
+		memberIds: string[]
+	): Promise<ConversationWithDetails> {
+		// Look for existing team conversation
+		let conversation = await prisma.conversation.findFirst({
+			where: {
+				teamId,
+				isGroup: true,
+			},
+			include: {
+				participants: {
+					include: {
+						user: {
+							select: {
+								id: true,
+								username: true,
+								avatarUrl: true,
+							},
+						},
+					},
+				},
+				messages: {
+					orderBy: {
+						createdAt: "desc",
+					},
+					take: 1,
+					where: {
+						deletedAt: null,
+					},
+					include: {
+						sender: {
+							select: {
+								id: true,
+								username: true,
+							},
+						},
+					},
+				},
+				_count: {
+					select: {
+						messages: true,
+					},
+				},
+			},
+		});
+
+		// If no conversation exists, create one
+		if (!conversation) {
+			conversation = await prisma.conversation.create({
+				data: {
+					name: `${teamName} Chat`,
+					isGroup: true,
+					teamId,
+					participants: {
+						create: memberIds.map((userId) => ({ userId })),
+					},
+				},
+				include: {
+					participants: {
+						include: {
+							user: {
+								select: {
+									id: true,
+									username: true,
+									avatarUrl: true,
+								},
+							},
+						},
+					},
+					messages: {
+						orderBy: {
+							createdAt: "desc",
+						},
+						take: 1,
+						where: {
+							deletedAt: null,
+						},
+						include: {
+							sender: {
+								select: {
+									id: true,
+									username: true,
+								},
+							},
+						},
+					},
+					_count: {
+						select: {
+							messages: true,
+						},
+					},
+				},
+			});
+		}
+
+		return conversation as ConversationWithDetails;
+	}
+
+	/**
+	 * Sync team conversation participants with current team members
+	 * Adds new members and removes departed members
+	 */
+	static async syncTeamConversationParticipants(
+		teamId: string,
+		currentMemberIds: string[]
+	): Promise<void> {
+		const conversation = await prisma.conversation.findFirst({
+			where: {
+				teamId,
+				isGroup: true,
+			},
+			include: {
+				participants: true,
+			},
+		});
+
+		if (!conversation) {
+			return; // No team conversation exists yet
+		}
+
+		const existingParticipantIds = conversation.participants.map(
+			(p) => p.userId
+		);
+		const memberIdSet = new Set(currentMemberIds);
+		const existingIdSet = new Set(existingParticipantIds);
+
+		// Find members to add (in team but not in conversation)
+		const toAdd = currentMemberIds.filter((id) => !existingIdSet.has(id));
+
+		// Find members to remove (in conversation but not in team)
+		const toRemove = existingParticipantIds.filter(
+			(id) => !memberIdSet.has(id)
+		);
+
+		// Add new participants
+		if (toAdd.length > 0) {
+			await prisma.conversationParticipant.createMany({
+				data: toAdd.map((userId) => ({
+					conversationId: conversation.id,
+					userId,
+				})),
+				skipDuplicates: true,
+			});
+		}
+
+		// Remove departed participants
+		if (toRemove.length > 0) {
+			await prisma.conversationParticipant.deleteMany({
+				where: {
+					conversationId: conversation.id,
+					userId: {
+						in: toRemove,
+					},
+				},
+			});
+		}
+	}
+
+	/**
+	 * Get unread count for a specific conversation
+	 */
+	static async getConversationUnreadCount(
+		conversationId: string,
+		userId: string
+	): Promise<number> {
+		const participant = await prisma.conversationParticipant.findFirst({
+			where: {
+				conversationId,
+				userId,
+			},
+		});
+
+		if (!participant) {
+			return 0;
+		}
+
+		const lastReadAt = participant.lastReadAt || new Date(0);
+
+		return prisma.message.count({
+			where: {
+				conversationId,
+				createdAt: { gt: lastReadAt },
+				senderId: { not: userId },
+				deletedAt: null,
+			},
+		});
+	}
 }

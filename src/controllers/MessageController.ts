@@ -450,4 +450,186 @@ export class MessageController {
 			next(error);
 		}
 	}
+
+	/**
+	 * GET /messages/team/:teamId
+	 * Get team conversation with messages (creates if doesn't exist)
+	 */
+	static async getTeamConversation(
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction
+	): Promise<void> {
+		try {
+			const userId = req.user!.sub;
+			const { teamId } = req.params;
+
+			// Verify user is a member of the team and get team data
+			const team = await prisma.team.findFirst({
+				where: {
+					id: teamId,
+					members: {
+						some: {
+							userId,
+						},
+					},
+				},
+				include: {
+					members: {
+						select: {
+							userId: true,
+						},
+					},
+				},
+			});
+
+			if (!team) {
+				res.status(403).json({
+					error: "You are not a member of this team",
+				});
+				return;
+			}
+
+			// Get or create the team conversation
+			const memberIds = team.members.map((m) => m.userId);
+			const conversation = await MessageService.getOrCreateTeamConversation(
+				teamId,
+				team.name,
+				memberIds
+			);
+
+			// Get recent messages
+			const messages = await MessageService.getMessages(
+				conversation.id,
+				userId,
+				{ limit: 50 }
+			);
+
+			// Get unread count
+			const unreadCount = await MessageService.getConversationUnreadCount(
+				conversation.id,
+				userId
+			);
+
+			res.json({
+				conversationId: conversation.id,
+				messages,
+				unreadCount,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	/**
+	 * POST /messages/team/:teamId
+	 * Send a message to the team conversation
+	 */
+	static async sendTeamMessage(
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction
+	): Promise<void> {
+		try {
+			const errors = validationResult(req);
+			if (!errors.isEmpty()) {
+				res.status(400).json({ errors: errors.array() });
+				return;
+			}
+
+			const userId = req.user!.sub;
+			const { teamId } = req.params;
+			const { content } = req.body;
+
+			// Verify user is a member of the team
+			const team = await prisma.team.findFirst({
+				where: {
+					id: teamId,
+					members: {
+						some: {
+							userId,
+						},
+					},
+				},
+				include: {
+					members: {
+						select: {
+							userId: true,
+						},
+					},
+				},
+			});
+
+			if (!team) {
+				res.status(403).json({
+					error: "You are not a member of this team",
+				});
+				return;
+			}
+
+			// Get or create the team conversation
+			const memberIds = team.members.map((m) => m.userId);
+			const conversation = await MessageService.getOrCreateTeamConversation(
+				teamId,
+				team.name,
+				memberIds
+			);
+
+			// Send the message
+			const message = await MessageService.sendMessage(
+				conversation.id,
+				userId,
+				content
+			);
+
+			res.json({ success: true, message });
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	/**
+	 * POST /messages/team/:teamId/read
+	 * Mark team conversation as read
+	 */
+	static async markTeamAsRead(
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction
+	): Promise<void> {
+		try {
+			const userId = req.user!.sub;
+			const { teamId } = req.params;
+
+			// Find the team conversation
+			const conversation = await prisma.conversation.findFirst({
+				where: {
+					teamId,
+					isGroup: true,
+				},
+			});
+
+			if (!conversation) {
+				res.status(404).json({ error: "Team conversation not found" });
+				return;
+			}
+
+			await MessageService.markAsRead(conversation.id, userId);
+
+			res.json({ success: true });
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	/**
+	 * Validation for team messages
+	 */
+	static teamMessageValidation = [
+		param("teamId").isUUID().withMessage("Invalid team ID"),
+		body("content")
+			.isString()
+			.isLength({ min: 1, max: 5000 })
+			.withMessage("Message must be 1-5000 characters"),
+	];
 }

@@ -19,6 +19,15 @@ router.post(
 // API endpoints (must be before :conversationId routes)
 router.get("/unread-count", MessageController.getUnreadCount);
 
+// Team chat endpoints
+router.get("/team/:teamId", MessageController.getTeamConversation);
+router.post(
+	"/team/:teamId",
+	MessageController.teamMessageValidation,
+	MessageController.sendTeamMessage
+);
+router.post("/team/:teamId/read", MessageController.markTeamAsRead);
+
 // Conversation routes with :conversationId parameter
 router.get("/:conversationId", MessageController.showConversation);
 router.post(

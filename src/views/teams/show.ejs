@@ -491,3 +491,8 @@
 		</div>
 	</div>
 </div>
+
+<%# Team Chat Widget - Only for team members %>
+<% if (isMember) { %>
+	<%- include('../partials/_team-chat-widget', { teamId: team.id, teamName: team.name, currentUserId: user.id }) %>
+<% } %>

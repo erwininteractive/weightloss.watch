@@ -5,6 +5,7 @@ import prisma from "../services/database";
 import { TeamRole } from "@prisma/client";
 import crypto from "crypto";
 import { AchievementService } from "../services/achievement.service";
+import { MessageService } from "../services/message.service";
 
 // Role options for display
 export const ROLE_OPTIONS = [
@@ -658,6 +659,20 @@ export class TeamController {
 				},
 			});
 
+			// Sync team chat participants
+			try {
+				const teamMembers = await prisma.teamMember.findMany({
+					where: { teamId },
+					select: { userId: true },
+				});
+				await MessageService.syncTeamConversationParticipants(
+					teamId,
+					teamMembers.map((m) => m.userId)
+				);
+			} catch (error) {
+				console.error("Error syncing team chat participants:", error);
+			}
+
 			// Check for achievement unlocks
 			try {
 				await AchievementService.checkEngagementAchievements(userId);
@@ -823,6 +838,20 @@ export class TeamController {
 				},
 			});
 
+			// Sync team chat participants
+			try {
+				const teamMembers = await prisma.teamMember.findMany({
+					where: { teamId: team.id },
+					select: { userId: true },
+				});
+				await MessageService.syncTeamConversationParticipants(
+					team.id,
+					teamMembers.map((m) => m.userId)
+				);
+			} catch (error) {
+				console.error("Error syncing team chat participants:", error);
+			}
+
 			// Check for achievement unlocks
 			try {
 				await AchievementService.checkEngagementAchievements(userId);
@@ -886,6 +915,20 @@ export class TeamController {
 					teamId_userId: { teamId, userId },
 				},
 			});
+
+			// Sync team chat participants
+			try {
+				const teamMembers = await prisma.teamMember.findMany({
+					where: { teamId },
+					select: { userId: true },
+				});
+				await MessageService.syncTeamConversationParticipants(
+					teamId,
+					teamMembers.map((m) => m.userId)
+				);
+			} catch (error) {
+				console.error("Error syncing team chat participants:", error);
+			}
 
 			res.redirect(
 				"/teams?success=" +
@@ -1072,6 +1115,20 @@ export class TeamController {
 			await prisma.teamMember.delete({
 				where: { id: memberId },
 			});
+
+			// Sync team chat participants
+			try {
+				const teamMembers = await prisma.teamMember.findMany({
+					where: { teamId },
+					select: { userId: true },
+				});
+				await MessageService.syncTeamConversationParticipants(
+					teamId,
+					teamMembers.map((m) => m.userId)
+				);
+			} catch (error) {
+				console.error("Error syncing team chat participants:", error);
+			}
 
 			res.redirect(
 				`/teams/${teamId}?success=` +
