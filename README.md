@@ -84,6 +84,34 @@ class AuthService {
 
 **Server-Side Rendering**: EJS templates with a master layout system. Alpine.js adds interactivity where needed without the complexity of a SPA.
 
+**View Partials**: The layout is decomposed into reusable partials for maintainability:
+
+| Partial                  | Purpose                                       |
+| ------------------------ | --------------------------------------------- |
+| `_head.ejs`              | Meta tags, favicons, Open Graph, fonts, CSS   |
+| `_nav.ejs`               | Desktop and mobile navigation with auth state |
+| `_toast.ejs`             | Toast notification container                  |
+| `_achievement-modal.ejs` | Achievement celebration modal with confetti   |
+| `_scripts.ejs`           | Alpine.js, toast system, Socket.io client     |
+| `_avatar.ejs`            | User avatar with fallback to initials         |
+| `_card.ejs`              | Reusable card component                       |
+| `_empty-state.ejs`       | Empty state with icon, message, and CTA       |
+
+**Toast Notifications**: A global notification system for user feedback:
+
+```javascript
+// Client-side (after page load)
+toast.success("Profile updated!");
+toast.error("Something went wrong");
+toast.warning("Please check your input");
+toast.info("New message received", 10000); // custom duration
+
+// Server-side (via redirect query params)
+res.redirect("/dashboard?success=Welcome+back!");
+```
+
+Visit `/toast-demo` in development to test the notification system.
+
 ## Tech Stack
 
 ### Backend
@@ -234,7 +262,11 @@ src/
 │   ├── socket.service.ts
 │   └── database.ts    # Prisma client
 ├── views/             # EJS templates
-│   ├── layout.ejs     # Master layout
+│   ├── layout.ejs     # Master layout (16 lines - includes partials)
+│   ├── partials/      # Reusable components
+│   │   ├── _head.ejs, _nav.ejs, _toast.ejs, _scripts.ejs
+│   │   ├── _avatar.ejs, _card.ejs, _empty-state.ejs
+│   │   └── _achievement-modal.ejs, _team-chat-widget.ejs
 │   └── */             # Feature-specific views
 ├── styles/            # Source CSS (Tailwind)
 └── server.ts          # Application entry point
