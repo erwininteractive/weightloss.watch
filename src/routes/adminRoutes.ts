@@ -6,8 +6,18 @@ import { requireAdmin } from "../middleware/adminAuth";
 const router = Router();
 
 // User management
-router.get("/admin/users", webAuthenticate, requireAdmin, AdminController.listUsers);
-router.get("/admin/users/:userId", webAuthenticate, requireAdmin, AdminController.viewUser);
+router.get(
+	"/admin/users",
+	webAuthenticate,
+	requireAdmin,
+	AdminController.listUsers,
+);
+router.get(
+	"/admin/users/:userId",
+	webAuthenticate,
+	requireAdmin,
+	AdminController.viewUser,
+);
 router.post(
 	"/admin/users/:userId/reset-password",
 	webAuthenticate,
@@ -15,7 +25,12 @@ router.post(
 	AdminController.resetPasswordValidation,
 	AdminController.resetPassword,
 );
-router.post("/admin/users/:userId/toggle-admin", webAuthenticate, requireAdmin, AdminController.toggleAdmin);
+router.post(
+	"/admin/users/:userId/toggle-admin",
+	webAuthenticate,
+	requireAdmin,
+	AdminController.toggleAdmin,
+);
 router.post(
 	"/admin/users/:userId/toggle-active",
 	webAuthenticate,
@@ -27,6 +42,12 @@ router.post(
 	webAuthenticate,
 	requireAdmin,
 	AdminController.resendVerification,
+);
+router.post(
+	"/admin/users/:userId/delete",
+	webAuthenticate,
+	requireAdmin,
+	AdminController.deleteUser,
 );
 
 export default router;

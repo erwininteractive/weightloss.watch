@@ -183,7 +183,7 @@ export class AdminController {
 					success: false,
 					message: "User not found",
 				});
-			return;
+				return;
 			}
 
 			// Hash new password
@@ -228,7 +228,7 @@ export class AdminController {
 					success: false,
 					message: "You cannot modify your own admin status",
 				});
-			return;
+				return;
 			}
 
 			const user = await prisma.user.findUnique({
@@ -241,7 +241,7 @@ export class AdminController {
 					success: false,
 					message: "User not found",
 				});
-			return;
+				return;
 			}
 
 			const updatedUser = await prisma.user.update({
@@ -279,7 +279,7 @@ export class AdminController {
 					success: false,
 					message: "You cannot deactivate your own account",
 				});
-			return;
+				return;
 			}
 
 			const user = await prisma.user.findUnique({
@@ -292,7 +292,7 @@ export class AdminController {
 					success: false,
 					message: "User not found",
 				});
-			return;
+				return;
 			}
 
 			const updatedUser = await prisma.user.update({
@@ -319,6 +319,71 @@ export class AdminController {
 	}
 
 	/**
+	 * POST /admin/users/:userId/delete
+	 * Permanently delete a user and all their data
+	 */
+	static async deleteUser(
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const { userId } = req.params;
+			const adminUserId = req.user!.sub;
+
+			// Prevent users from deleting themselves
+			if (userId === adminUserId) {
+				res.status(400).json({
+					success: false,
+					message:
+						"You cannot delete your own account from the admin panel",
+				});
+				return;
+			}
+
+			const user = await prisma.user.findUnique({
+				where: { id: userId },
+				select: {
+					id: true,
+					username: true,
+					email: true,
+					isAdmin: true,
+				},
+			});
+
+			if (!user) {
+				res.status(404).json({
+					success: false,
+					message: "User not found",
+				});
+				return;
+			}
+
+			// Prevent deleting other admins (extra safety)
+			if (user.isAdmin) {
+				res.status(400).json({
+					success: false,
+					message:
+						"Cannot delete an admin user. Remove admin status first.",
+				});
+				return;
+			}
+
+			// Delete the user - cascading deletes will handle related records
+			await prisma.user.delete({
+				where: { id: userId },
+			});
+
+			res.json({
+				success: true,
+				message: `User ${user.username} (${user.email}) has been permanently deleted`,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	/**
 	 * POST /admin/users/:userId/resend-verification
 	 * Resend verification email for a user
 	 */
@@ -332,7 +397,12 @@ export class AdminController {
 
 			const user = await prisma.user.findFirst({
 				where: { id: userId, deletedAt: null },
-				select: { id: true, email: true, emailVerified: true, username: true },
+				select: {
+					id: true,
+					email: true,
+					emailVerified: true,
+					username: true,
+				},
 			});
 
 			if (!user) {
