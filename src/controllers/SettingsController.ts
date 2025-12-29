@@ -4,13 +4,6 @@ import { AuthenticatedRequest } from "../types/auth";
 import prisma from "../services/database";
 import bcrypt from "bcrypt";
 
-// Theme options
-export const THEME_OPTIONS = [
-	{ value: "light", label: "Light" },
-	{ value: "dark", label: "Dark" },
-	{ value: "system", label: "System" },
-];
-
 // Unit system options
 export const UNIT_SYSTEMS = [
 	{ value: "IMPERIAL", label: "Imperial (lbs, ft)" },
@@ -36,9 +29,6 @@ export class SettingsController {
 			.optional()
 			.isBoolean()
 			.withMessage("Weight visible must be a boolean"),
-		body("theme")
-			.isIn(["light", "dark", "system"])
-			.withMessage("Invalid theme option"),
 	];
 
 	/**
@@ -89,7 +79,6 @@ export class SettingsController {
 			res.render("settings/index", {
 				title: "Settings",
 				user,
-				themeOptions: THEME_OPTIONS,
 				unitSystems: UNIT_SYSTEMS,
 				errors: [],
 				success: req.query.success || null,
@@ -138,15 +127,7 @@ export class SettingsController {
 				return;
 			}
 
-			const { unitSystem, profilePublic, weightVisible, theme } =
-				req.body;
-
-			// Map lowercase theme values to uppercase enum values
-			const themeMap: Record<string, "LIGHT" | "SYSTEM"> = {
-				light: "LIGHT",
-				dark: "LIGHT", // Fallback since DARK doesn't exist in enum
-				system: "SYSTEM",
-			};
+			const { unitSystem, profilePublic, weightVisible } = req.body;
 
 			await prisma.user.update({
 				where: { id: userId },
@@ -156,7 +137,6 @@ export class SettingsController {
 						profilePublic === "on" || profilePublic === "true",
 					weightVisible:
 						weightVisible === "on" || weightVisible === "true",
-					theme: themeMap[theme] || "SYSTEM",
 				},
 			});
 
@@ -298,58 +278,6 @@ export class SettingsController {
 				"/?message=" +
 					encodeURIComponent("Account deleted successfully."),
 			);
-		} catch (error) {
-			next(error);
-		}
-	}
-
-	/**
-	 * POST /api/settings/theme
-	 * Quick update theme preference via API
-	 */
-	static async updateTheme(
-		req: AuthenticatedRequest,
-		res: Response,
-		next: NextFunction,
-	): Promise<void> {
-		try {
-			const userId = req.user?.sub;
-
-			if (!userId) {
-				res.status(401).json({
-					success: false,
-					message: "Unauthorized",
-				});
-				return;
-			}
-
-			const { theme } = req.body;
-
-			if (!["light", "dark", "system"].includes(theme)) {
-				res.status(400).json({
-					success: false,
-					message: "Invalid theme option",
-				});
-				return;
-			}
-
-			// Map lowercase API values to uppercase enum values
-			// Note: "dark" maps to "LIGHT" as there's no DARK in the enum (schema limitation)
-			const themeMap: Record<string, "LIGHT" | "SYSTEM"> = {
-				light: "LIGHT",
-				dark: "LIGHT", // Fallback since DARK doesn't exist in enum
-				system: "SYSTEM",
-			};
-
-			await prisma.user.update({
-				where: { id: userId },
-				data: { theme: themeMap[theme] },
-			});
-
-			res.json({
-				success: true,
-				message: "Theme updated successfully",
-			});
 		} catch (error) {
 			next(error);
 		}

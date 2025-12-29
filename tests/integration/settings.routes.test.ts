@@ -70,7 +70,6 @@ describe("Settings Routes", () => {
 					unitSystem: "METRIC",
 					profilePublic: "true",
 					weightVisible: "true",
-					theme: "light",
 				})
 				.expect(302);
 
@@ -84,7 +83,6 @@ describe("Settings Routes", () => {
 			expect(updatedUser?.unitSystem).toBe("METRIC");
 			expect(updatedUser?.profilePublic).toBe(true);
 			expect(updatedUser?.weightVisible).toBe(true);
-			expect(updatedUser?.theme).toBe("LIGHT");
 		});
 
 		it("should handle unchecked checkboxes (false values)", async () => {
@@ -102,7 +100,6 @@ describe("Settings Routes", () => {
 				])
 				.send({
 					unitSystem: "IMPERIAL",
-					theme: "light",
 					// profilePublic and weightVisible not sent (unchecked)
 				})
 				.expect(302);
@@ -124,24 +121,6 @@ describe("Settings Routes", () => {
 				])
 				.send({
 					unitSystem: "INVALID",
-					theme: "light",
-				})
-				.expect(302);
-
-			expect(response.headers.location).toContain("/settings");
-			expect(response.headers.location).toContain("error=");
-		});
-
-		it("should validate theme option", async () => {
-			const response = await request(app)
-				.post("/settings/preferences")
-				.set("Cookie", [
-					`refreshToken=${authenticatedUser.tokens.refreshToken}`,
-					`accessToken=${authenticatedUser.tokens.accessToken}`,
-				])
-				.send({
-					unitSystem: "IMPERIAL",
-					theme: "invalid-theme",
 				})
 				.expect(302);
 
@@ -154,7 +133,6 @@ describe("Settings Routes", () => {
 				.post("/settings/preferences")
 				.send({
 					unitSystem: "METRIC",
-					theme: "dark",
 				})
 				.expect(302);
 
@@ -380,89 +358,6 @@ describe("Settings Routes", () => {
 				.expect(302);
 
 			expect(response.headers.location).toContain("/login");
-		});
-	});
-
-	describe("POST /api/settings/theme", () => {
-		// Note: The API accepts lowercase 'light', 'dark', 'system' but
-		// the Prisma schema only has LIGHT and SYSTEM (no DARK).
-		// 'dark' is mapped to LIGHT as a fallback until DARK is added to schema.
-
-		it("should update theme to light via API", async () => {
-			const response = await request(app)
-				.post("/api/settings/theme")
-				.set(
-					"Authorization",
-					`Bearer ${authenticatedUser.tokens.accessToken}`,
-				)
-				.send({ theme: "light" })
-				.expect(200);
-
-			expect(response.body.success).toBe(true);
-
-			const updatedUser = await prisma.user.findUnique({
-				where: { id: authenticatedUser.user.id },
-			});
-			expect(updatedUser?.theme).toBe("LIGHT");
-		});
-
-		it("should accept system theme", async () => {
-			const response = await request(app)
-				.post("/api/settings/theme")
-				.set(
-					"Authorization",
-					`Bearer ${authenticatedUser.tokens.accessToken}`,
-				)
-				.send({ theme: "system" })
-				.expect(200);
-
-			expect(response.body.success).toBe(true);
-
-			const updatedUser = await prisma.user.findUnique({
-				where: { id: authenticatedUser.user.id },
-			});
-			expect(updatedUser?.theme).toBe("SYSTEM");
-		});
-
-		it("should accept dark theme (mapped to LIGHT until DARK is added to schema)", async () => {
-			const response = await request(app)
-				.post("/api/settings/theme")
-				.set(
-					"Authorization",
-					`Bearer ${authenticatedUser.tokens.accessToken}`,
-				)
-				.send({ theme: "dark" })
-				.expect(200);
-
-			expect(response.body.success).toBe(true);
-
-			// Note: dark is mapped to LIGHT until DARK enum value is added
-			const updatedUser = await prisma.user.findUnique({
-				where: { id: authenticatedUser.user.id },
-			});
-			expect(updatedUser?.theme).toBe("LIGHT");
-		});
-
-		it("should reject invalid theme", async () => {
-			const response = await request(app)
-				.post("/api/settings/theme")
-				.set(
-					"Authorization",
-					`Bearer ${authenticatedUser.tokens.accessToken}`,
-				)
-				.send({ theme: "invalid" })
-				.expect(400);
-
-			expect(response.body.success).toBe(false);
-		});
-
-		it("should return 401 for unauthenticated request", async () => {
-			const response = await request(app)
-				.post("/api/settings/theme")
-				.send({ theme: "light" })
-				.expect(401);
-
-			expect(response.body.success).toBe(false);
 		});
 	});
 });

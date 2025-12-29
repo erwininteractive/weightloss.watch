@@ -17,9 +17,7 @@ import newsRoutes from "./newsRoutes";
 import toastDemoRoutes from "./toastDemoRoutes";
 import messageRoutes from "./messageRoutes";
 import feedbackRoutes from "./feedbackRoutes";
-import { SettingsController } from "../controllers/SettingsController";
 import { WeightController } from "../controllers/WeightController";
-import { authenticate } from "../middleware/auth";
 import { webAuthenticate } from "../middleware/webAuth";
 
 const router = Router();
@@ -32,11 +30,6 @@ router.use("/", newsRoutes); // News routes (public)
 router.use("/toast-demo", toastDemoRoutes); // Toast demo page
 router.use("/api/auth", authRoutes); // API auth endpoints (JSON)
 router.use("/achievements/api", achievementApiRoutes); // Achievement API endpoints
-router.post(
-	"/api/settings/theme",
-	authenticate,
-	SettingsController.updateTheme,
-); // API theme update
 router.delete("/photo/:photoId", webAuthenticate, WeightController.deletePhoto); // Delete progress photo
 router.use("/dashboard", dashboardRoutes);
 router.use("/profile", profileRoutes);
