@@ -303,51 +303,14 @@
 			}
 		}
 
-		// Update unread badge in navigation
-		function updateUnreadBadge() {
-			const badge = document.getElementById('messages-unread-badge');
-			const mobileBadge = document.getElementById('messages-unread-badge-mobile');
-
-			// Fetch current unread count
-			fetch('/messages/unread-count')
-				.then(res => res.json())
-				.then(data => {
-					const count = data.unreadCount || 0;
-					const displayCount = count > 99 ? '99+' : count.toString();
-
-					// Update desktop badge
-					if (badge) {
-						if (count > 0) {
-							badge.textContent = displayCount;
-							badge.classList.remove('hidden');
-						} else {
-							badge.classList.add('hidden');
-						}
-					}
-
-					// Update mobile badge
-					if (mobileBadge) {
-						if (count > 0) {
-							mobileBadge.textContent = displayCount;
-							mobileBadge.classList.remove('hidden');
-						} else {
-							mobileBadge.classList.add('hidden');
-						}
-					}
-				})
-				.catch(err => console.warn('Failed to fetch unread count:', err));
-		}
-
 		// Initialize on page load
 		document.addEventListener('DOMContentLoaded', function() {
 			connectSocket();
-			updateUnreadBadge();
 		});
 
 		// Expose for external use
 		window.wltSocket = {
-			getSocket: () => socket,
-			updateUnreadBadge: updateUnreadBadge
+			getSocket: () => socket
 		};
 	})();
 </script>
