@@ -16,6 +16,7 @@ import donateRoutes from "./donateRoutes";
 import newsRoutes from "./newsRoutes";
 import toastDemoRoutes from "./toastDemoRoutes";
 import messageRoutes from "./messageRoutes";
+import feedbackRoutes from "./feedbackRoutes";
 import { SettingsController } from "../controllers/SettingsController";
 import { WeightController } from "../controllers/WeightController";
 import { authenticate } from "../middleware/auth";
@@ -42,6 +43,7 @@ router.use("/profile", profileRoutes);
 router.use("/progress", weightRoutes);
 router.use("/teams", teamRoutes);
 router.use("/messages", messageRoutes); // Messaging routes
+router.use("/feedback", feedbackRoutes); // Feedback form
 router.use("/", postRoutes); // Post and comment routes
 router.use("/", challengeRoutes); // Challenge routes
 router.use("/achievements", achievementRoutes); // Achievement routes

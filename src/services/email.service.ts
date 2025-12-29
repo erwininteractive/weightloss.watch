@@ -279,6 +279,146 @@ export class EmailService {
 	}
 
 	/**
+	 * Send feedback email to admin
+	 */
+	async sendFeedbackEmail(options: {
+		adminEmail: string;
+		type: string;
+		subject: string;
+		message: string;
+		user: { id: string; username: string; email: string };
+	}): Promise<void> {
+		const { adminEmail, type, subject, message, user } = options;
+
+		const typeLabels: Record<string, string> = {
+			bug: "Bug Report",
+			feature: "Feature Request",
+			question: "Question",
+			other: "Other",
+		};
+
+		const mailOptions = {
+			from: process.env.SMTP_FROM || "noreply@example.com",
+			to: adminEmail,
+			replyTo: user.email,
+			subject: `[${typeLabels[type] || type}] ${subject}`,
+			html: this.getFeedbackEmailTemplate({
+				type: typeLabels[type] || type,
+				subject,
+				message,
+				user,
+			}),
+			text: `Feedback from ${user.username} (${user.email})\n\nType: ${typeLabels[type] || type}\nSubject: ${subject}\n\nMessage:\n${message}\n\nUser ID: ${user.id}`,
+		};
+
+		try {
+			const info = await this.transporter.sendMail(mailOptions);
+
+			if (this.isDevelopment) {
+				console.log("Feedback email sent (development mode)");
+				console.log("   To:", adminEmail);
+				console.log("   From User:", user.email);
+				console.log("   Subject:", mailOptions.subject);
+				if (info.messageId) {
+					console.log("   Message ID:", info.messageId);
+				}
+			}
+		} catch (error) {
+			console.error("Failed to send feedback email:", error);
+			throw new Error(
+				`Failed to send feedback email: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	}
+
+	/**
+	 * Get HTML template for feedback email
+	 */
+	private getFeedbackEmailTemplate(options: {
+		type: string;
+		subject: string;
+		message: string;
+		user: { id: string; username: string; email: string };
+	}): string {
+		const { type, subject, message, user } = options;
+		const escapedMessage = message
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/\n/g, "<br>");
+
+		return `
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>User Feedback</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+	<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f4;">
+		<tr>
+			<td style="padding: 20px 0;">
+				<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+					<!-- Header -->
+					<tr>
+						<td style="padding: 40px 30px; text-align: center; background-color: #0d9488; border-radius: 8px 8px 0 0;">
+							<h1 style="margin: 0; color: #ffffff; font-size: 28px;">WeighTogether Feedback</h1>
+						</td>
+					</tr>
+
+					<!-- Content -->
+					<tr>
+						<td style="padding: 40px 30px;">
+							<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+								<tr>
+									<td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
+										<strong style="color: #666666;">Type:</strong>
+										<span style="color: #333333; margin-left: 10px;">${type}</span>
+									</td>
+								</tr>
+								<tr>
+									<td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
+										<strong style="color: #666666;">From:</strong>
+										<span style="color: #333333; margin-left: 10px;">${user.username} (${user.email})</span>
+									</td>
+								</tr>
+								<tr>
+									<td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
+										<strong style="color: #666666;">Subject:</strong>
+										<span style="color: #333333; margin-left: 10px;">${subject}</span>
+									</td>
+								</tr>
+							</table>
+
+							<div style="margin-top: 30px;">
+								<strong style="color: #666666; display: block; margin-bottom: 10px;">Message:</strong>
+								<div style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; color: #333333; line-height: 1.6;">
+									${escapedMessage}
+								</div>
+							</div>
+						</td>
+					</tr>
+
+					<!-- Footer -->
+					<tr>
+						<td style="padding: 20px 30px; text-align: center; border-top: 1px solid #eeeeee; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+							<p style="margin: 0; color: #999999; font-size: 12px;">
+								User ID: ${user.id}<br>
+								You can reply directly to this email to respond to the user.
+							</p>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+		`;
+	}
+
+	/**
 	 * Verify SMTP connection
 	 */
 	async verifyConnection(): Promise<boolean> {
