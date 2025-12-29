@@ -317,7 +317,8 @@ export class ChallengeController {
 				if (!membership) {
 					res.status(403).render("errors/403", {
 						title: "Access Denied",
-						message: "You must be a team member to view this challenge",
+						message:
+							"You must be a team member to view this challenge",
 					});
 					return;
 				}
@@ -384,7 +385,8 @@ export class ChallengeController {
 				if (!membership) {
 					res.status(403).json({
 						success: false,
-						message: "You must be a team member to join this challenge",
+						message:
+							"You must be a team member to join this challenge",
 					});
 					return;
 				}
@@ -394,7 +396,8 @@ export class ChallengeController {
 			if (!["UPCOMING", "ACTIVE"].includes(challenge.status)) {
 				res.status(400).json({
 					success: false,
-					message: "This challenge is no longer accepting participants",
+					message:
+						"This challenge is no longer accepting participants",
 				});
 				return;
 			}
@@ -519,17 +522,19 @@ export class ChallengeController {
 				switch (challenge.type) {
 					case "WEIGHT_LOSS_PERCENTAGE":
 					case "TOTAL_WEIGHT_LOSS":
-						progress = await this.calculateWeightLossProgress(
-							participant.userId,
-							challenge,
-						);
+						progress =
+							await ChallengeController.calculateWeightLossProgress(
+								participant.userId,
+								challenge,
+							);
 						break;
 
 					case "CONSISTENCY":
-						progress = await this.calculateConsistencyProgress(
-							participant.userId,
-							challenge,
-						);
+						progress =
+							await ChallengeController.calculateConsistencyProgress(
+								participant.userId,
+								challenge,
+							);
 						break;
 
 					case "ACTIVITY_BASED":
@@ -539,17 +544,19 @@ export class ChallengeController {
 				}
 
 				// Update participant progress
-				const completed: boolean =
-					!!(challenge.targetValue && progress >= challenge.targetValue);
+				const completed: boolean = !!(
+					challenge.targetValue && progress >= challenge.targetValue
+				);
 
 				await prisma.challengeParticipant.update({
 					where: { id: participant.id },
 					data: {
 						progress,
 						completed,
-						completedAt: completed && !participant.completedAt
-							? new Date()
-							: participant.completedAt,
+						completedAt:
+							completed && !participant.completedAt
+								? new Date()
+								: participant.completedAt,
 					},
 				});
 			}

@@ -138,7 +138,15 @@ export class SettingsController {
 				return;
 			}
 
-			const { unitSystem, profilePublic, weightVisible, theme } = req.body;
+			const { unitSystem, profilePublic, weightVisible, theme } =
+				req.body;
+
+			// Map lowercase theme values to uppercase enum values
+			const themeMap: Record<string, "LIGHT" | "SYSTEM"> = {
+				light: "LIGHT",
+				dark: "LIGHT", // Fallback since DARK doesn't exist in enum
+				system: "SYSTEM",
+			};
 
 			await prisma.user.update({
 				where: { id: userId },
@@ -148,7 +156,7 @@ export class SettingsController {
 						profilePublic === "on" || profilePublic === "true",
 					weightVisible:
 						weightVisible === "on" || weightVisible === "true",
-					theme,
+					theme: themeMap[theme] || "SYSTEM",
 				},
 			});
 
@@ -325,9 +333,17 @@ export class SettingsController {
 				return;
 			}
 
+			// Map lowercase API values to uppercase enum values
+			// Note: "dark" maps to "LIGHT" as there's no DARK in the enum (schema limitation)
+			const themeMap: Record<string, "LIGHT" | "SYSTEM"> = {
+				light: "LIGHT",
+				dark: "LIGHT", // Fallback since DARK doesn't exist in enum
+				system: "SYSTEM",
+			};
+
 			await prisma.user.update({
 				where: { id: userId },
-				data: { theme },
+				data: { theme: themeMap[theme] },
 			});
 
 			res.json({
