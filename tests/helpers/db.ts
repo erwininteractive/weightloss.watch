@@ -33,6 +33,7 @@ export async function resetDatabase() {
 	// Delete in correct order to respect foreign key constraints
 	await prisma.comment.deleteMany();
 	await prisma.like.deleteMany();
+	await prisma.postRead.deleteMany();
 	await prisma.message.deleteMany();
 	await prisma.conversation.deleteMany();
 	await prisma.userAchievement.deleteMany();

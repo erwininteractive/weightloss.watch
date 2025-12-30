@@ -60,8 +60,15 @@ export class MessageController {
 	];
 
 	/**
+	 * Validation for marking a post as read
+	 */
+	static markPostReadValidation = [
+		param("postId").isUUID().withMessage("Invalid post ID"),
+	];
+
+	/**
 	 * GET /messages
-	 * Show aggregated feed of posts from all teams the user is a member of
+	 * Show aggregated feed of unread posts from all teams the user is a member of
 	 */
 	static async listTeamFeeds(
 		req: AuthenticatedRequest,
@@ -88,11 +95,17 @@ export class MessageController {
 
 			const teamIds = memberships.map((m) => m.teamId);
 
-			// Get posts from all user's teams
+			// Get unread posts from all user's teams (posts without a PostRead record for this user)
 			const posts = await prisma.post.findMany({
 				where: {
 					teamId: { in: teamIds },
 					deletedAt: null,
+					// Exclude posts that the user has already read
+					reads: {
+						none: {
+							userId,
+						},
+					},
 				},
 				include: {
 					author: {
@@ -139,6 +152,70 @@ export class MessageController {
 				posts: postsWithLikeStatus,
 				user,
 			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	/**
+	 * POST /messages/posts/:postId/read
+	 * Mark a team post as read
+	 */
+	static async markPostAsRead(
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const errors = validationResult(req);
+			if (!errors.isEmpty()) {
+				res.status(400).json({ errors: errors.array() });
+				return;
+			}
+
+			const userId = req.user!.sub;
+			const { postId } = req.params;
+
+			// Verify the post exists and user has access (is in the team)
+			const post = await prisma.post.findFirst({
+				where: {
+					id: postId,
+					deletedAt: null,
+					team: {
+						members: {
+							some: {
+								userId,
+							},
+						},
+					},
+				},
+			});
+
+			if (!post) {
+				res.status(404).json({
+					error: "Post not found or you don't have access",
+				});
+				return;
+			}
+
+			// Create or update the PostRead record (upsert to handle duplicates)
+			await prisma.postRead.upsert({
+				where: {
+					postId_userId: {
+						postId,
+						userId,
+					},
+				},
+				create: {
+					postId,
+					userId,
+				},
+				update: {
+					readAt: new Date(),
+				},
+			});
+
+			res.json({ success: true });
 		} catch (error) {
 			next(error);
 		}

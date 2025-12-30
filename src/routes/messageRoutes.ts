@@ -10,6 +10,13 @@ router.use(webAuthenticate);
 // Web routes
 router.get("/", MessageController.listTeamFeeds);
 
+// Post read tracking
+router.post(
+	"/posts/:postId/read",
+	MessageController.markPostReadValidation,
+	MessageController.markPostAsRead,
+);
+
 // Team chat endpoints
 router.get("/team/:teamId", MessageController.getTeamConversation);
 router.post(

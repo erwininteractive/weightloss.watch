@@ -122,6 +122,7 @@ model User {
 	posts             Post[]
 	comments          Comment[]
 	likes             Like[]
+	readPosts         PostRead[]
 	sentMessages      Message[]     @relation("MessageSender")
 	conversations     ConversationParticipant[]
 	challengeParticipants ChallengeParticipant[]
@@ -237,6 +238,7 @@ model Post {
 	// Relations
 	comments    Comment[]
 	likes       Like[]
+	reads       PostRead[]
 
 	@@index([authorId, createdAt(sort: Desc)])
 	@@index([teamId, visibility, createdAt(sort: Desc)])
@@ -274,6 +276,20 @@ model Like {
 
 	@@unique([postId, userId])
 	@@index([userId])
+}
+
+model PostRead {
+	id        String   @id @default(uuid())
+	postId    String
+	post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+	userId    String
+	user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	readAt    DateTime @default(now())
+
+	@@unique([postId, userId])
+	@@index([userId])
+	@@index([postId])
 }
 
 model Conversation {

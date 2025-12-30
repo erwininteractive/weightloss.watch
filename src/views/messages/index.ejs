@@ -2,6 +2,13 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold text-slate-800">Team Feed</h1>
+        <% if (posts && posts.length > 0) { %>
+            <button
+                onclick="markAllAsRead()"
+                class="text-sm text-slate-500 hover:text-teal-600 transition-colors font-medium">
+                Mark all as read
+            </button>
+        <% } %>
     </div>
 
     <!-- Posts List -->
@@ -90,6 +97,16 @@
                                 </svg>
                                 <span><%= post._count.comments %></span>
                             </a>
+
+                            <button
+                                onclick="markAsRead('<%= post.id %>', this)"
+                                class="ml-auto flex items-center gap-2 text-sm text-slate-400 hover:text-teal-600 transition-colors"
+                                title="Mark as read">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>Mark read</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -99,10 +116,10 @@
         <!-- Empty State -->
         <div class="bg-white rounded-lg shadow text-center py-12 px-4">
             <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
-            <h3 class="text-lg font-semibold text-slate-800 mb-1">No posts yet</h3>
-            <p class="text-gray-500 mb-6">Join a team to see posts from your teammates!</p>
+            <h3 class="text-lg font-semibold text-slate-800 mb-1">All caught up!</h3>
+            <p class="text-gray-500 mb-6">You've read all posts from your teams. Check back later for new updates!</p>
             <a href="/teams" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
@@ -144,6 +161,73 @@ async function toggleLike(postId, button) {
         }
     } catch (error) {
         console.error('Error toggling like:', error);
+    }
+}
+
+async function markAsRead(postId, button) {
+    try {
+        const response = await fetch(`/messages/posts/${postId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Find and remove the post card from the DOM
+            const postCard = button.closest('.bg-white.rounded-xl');
+            if (postCard) {
+                postCard.style.transition = 'opacity 0.3s, transform 0.3s';
+                postCard.style.opacity = '0';
+                postCard.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    postCard.remove();
+                    // Check if there are any posts left
+                    const remainingPosts = document.querySelectorAll('.bg-white.rounded-xl.shadow-sm');
+                    if (remainingPosts.length === 0) {
+                        location.reload(); // Reload to show empty state
+                    }
+                }, 300);
+            }
+        }
+    } catch (error) {
+        console.error('Error marking post as read:', error);
+    }
+}
+
+async function markAllAsRead() {
+    const postCards = document.querySelectorAll('.bg-white.rounded-xl.shadow-sm');
+    const postIds = [];
+
+    postCards.forEach(card => {
+        const markReadButton = card.querySelector('button[onclick^="markAsRead"]');
+        if (markReadButton) {
+            const onclick = markReadButton.getAttribute('onclick');
+            const match = onclick.match(/markAsRead\('([^']+)'/);
+            if (match) {
+                postIds.push(match[1]);
+            }
+        }
+    });
+
+    // Mark all posts as read in parallel
+    const promises = postIds.map(postId =>
+        fetch(`/messages/posts/${postId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+    );
+
+    try {
+        await Promise.all(promises);
+        // Reload page to show empty state
+        location.reload();
+    } catch (error) {
+        console.error('Error marking all posts as read:', error);
     }
 }
 </script>
