@@ -73,4 +73,16 @@ export class HomeController {
 				"WeighTogether is free and open source. Learn how to contribute to the project and join our community of developers.",
 		});
 	};
+
+	/**
+	 * GET /privacy
+	 * Privacy Policy page.
+	 */
+	static privacy = (_req: Request, res: Response): void => {
+		res.render("legal/privacy", {
+			title: "Privacy Policy",
+			description:
+				"Learn how WeighTogether collects, uses, and protects your personal information.",
+		});
+	};
 }
