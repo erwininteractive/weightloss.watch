@@ -66,7 +66,7 @@ export class MessageController {
 	static async listTeamFeeds(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -151,16 +151,20 @@ export class MessageController {
 	static async newConversationForm(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const searchQuery = req.query.q as string | undefined;
-			let users: { id: string; username: string; avatarUrl: string | null }[] = [];
+			let users: {
+				id: string;
+				username: string;
+				avatarUrl: string | null;
+			}[] = [];
 
 			if (searchQuery && searchQuery.length >= 2) {
 				users = await MessageService.searchUsers(
 					searchQuery,
-					req.user!.sub
+					req.user!.sub,
 				);
 			}
 
@@ -181,17 +185,21 @@ export class MessageController {
 	static async createConversation(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
 				const searchQuery = req.query.q as string | undefined;
-				let users: { id: string; username: string; avatarUrl: string | null }[] = [];
+				let users: {
+					id: string;
+					username: string;
+					avatarUrl: string | null;
+				}[] = [];
 				if (searchQuery) {
 					users = await MessageService.searchUsers(
 						searchQuery,
-						req.user!.sub
+						req.user!.sub,
 					);
 				}
 				res.render("messages/new", {
@@ -213,14 +221,14 @@ export class MessageController {
 				conversation = await MessageService.createGroupConversation(
 					name || "Group Chat",
 					userId,
-					participantIds
+					participantIds,
 				);
 			} else if (participantId) {
 				// Create or get DM conversation
 				conversation =
 					await MessageService.getOrCreateDirectConversation(
 						userId,
-						participantId
+						participantId,
 					);
 			} else {
 				res.render("messages/new", {
@@ -245,7 +253,7 @@ export class MessageController {
 	static async showConversation(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -253,20 +261,21 @@ export class MessageController {
 
 			const conversation = await MessageService.getConversation(
 				conversationId,
-				userId
+				userId,
 			);
 
 			if (!conversation) {
 				res.status(404).render("errors/404", {
 					title: "Conversation Not Found",
-					message: "This conversation doesn't exist or you don't have access to it.",
+					message:
+						"This conversation doesn't exist or you don't have access to it.",
 				});
 				return;
 			}
 
 			const messages = await MessageService.getMessages(
 				conversationId,
-				userId
+				userId,
 			);
 
 			// Mark as read
@@ -274,7 +283,7 @@ export class MessageController {
 
 			const displayName = MessageService.getConversationDisplayName(
 				conversation,
-				userId
+				userId,
 			);
 
 			res.render("messages/show", {
@@ -296,7 +305,7 @@ export class MessageController {
 	static async sendMessage(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const errors = validationResult(req);
@@ -339,7 +348,7 @@ export class MessageController {
 	static async editMessage(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const errors = validationResult(req);
@@ -355,7 +364,7 @@ export class MessageController {
 			const message = await MessageService.editMessage(
 				messageId,
 				userId,
-				content
+				content,
 			);
 
 			if (!message) {
@@ -378,7 +387,7 @@ export class MessageController {
 	static async deleteMessage(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -386,7 +395,7 @@ export class MessageController {
 
 			const deleted = await MessageService.deleteMessage(
 				messageId,
-				userId
+				userId,
 			);
 
 			if (!deleted) {
@@ -409,7 +418,7 @@ export class MessageController {
 	static async markAsRead(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -424,31 +433,13 @@ export class MessageController {
 	}
 
 	/**
-	 * GET /api/messages/unread
-	 * Get total unread count (for navbar badge)
-	 */
-	static async getUnreadCount(
-		req: AuthenticatedRequest,
-		res: Response,
-		next: NextFunction
-	): Promise<void> {
-		try {
-			const userId = req.user!.sub;
-			const count = await MessageService.getTotalUnreadCount(userId);
-			res.json({ unreadCount: count });
-		} catch (error) {
-			next(error);
-		}
-	}
-
-	/**
 	 * GET /api/messages/:conversationId/messages
 	 * Get messages for a conversation (API endpoint for infinite scroll)
 	 */
 	static async getMessages(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -459,7 +450,7 @@ export class MessageController {
 			const messages = await MessageService.getMessages(
 				conversationId,
 				userId,
-				{ limit, before }
+				{ limit, before },
 			);
 
 			res.json({ messages });
@@ -475,7 +466,7 @@ export class MessageController {
 	static async searchUsers(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -500,7 +491,7 @@ export class MessageController {
 	static async getTeamConversation(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;
@@ -534,23 +525,24 @@ export class MessageController {
 
 			// Get or create the team conversation
 			const memberIds = team.members.map((m) => m.userId);
-			const conversation = await MessageService.getOrCreateTeamConversation(
-				teamId,
-				team.name,
-				memberIds
-			);
+			const conversation =
+				await MessageService.getOrCreateTeamConversation(
+					teamId,
+					team.name,
+					memberIds,
+				);
 
 			// Get recent messages
 			const messages = await MessageService.getMessages(
 				conversation.id,
 				userId,
-				{ limit: 50 }
+				{ limit: 50 },
 			);
 
 			// Get unread count
 			const unreadCount = await MessageService.getConversationUnreadCount(
 				conversation.id,
-				userId
+				userId,
 			);
 
 			res.json({
@@ -570,7 +562,7 @@ export class MessageController {
 	static async sendTeamMessage(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const errors = validationResult(req);
@@ -611,17 +603,18 @@ export class MessageController {
 
 			// Get or create the team conversation
 			const memberIds = team.members.map((m) => m.userId);
-			const conversation = await MessageService.getOrCreateTeamConversation(
-				teamId,
-				team.name,
-				memberIds
-			);
+			const conversation =
+				await MessageService.getOrCreateTeamConversation(
+					teamId,
+					team.name,
+					memberIds,
+				);
 
 			// Send the message
 			const message = await MessageService.sendMessage(
 				conversation.id,
 				userId,
-				content
+				content,
 			);
 
 			res.json({ success: true, message });
@@ -637,7 +630,7 @@ export class MessageController {
 	static async markTeamAsRead(
 		req: AuthenticatedRequest,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	): Promise<void> {
 		try {
 			const userId = req.user!.sub;

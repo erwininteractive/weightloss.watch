@@ -59,7 +59,7 @@ describe("Settings Routes", () => {
 	});
 
 	describe("POST /settings/preferences", () => {
-		it("should update user preferences", async () => {
+		it("should update user preferences with checkbox values", async () => {
 			const response = await request(app)
 				.post("/settings/preferences")
 				.set("Cookie", [
@@ -68,8 +68,8 @@ describe("Settings Routes", () => {
 				])
 				.send({
 					unitSystem: "METRIC",
-					profilePublic: "true",
-					weightVisible: "true",
+					profilePublic: "on", // How HTML checkboxes actually send values
+					weightVisible: "on",
 				})
 				.expect(302);
 

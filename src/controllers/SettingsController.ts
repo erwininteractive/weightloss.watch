@@ -21,14 +21,8 @@ export class SettingsController {
 		body("unitSystem")
 			.isIn(["IMPERIAL", "METRIC"])
 			.withMessage("Invalid unit system"),
-		body("profilePublic")
-			.optional()
-			.isBoolean()
-			.withMessage("Profile public must be a boolean"),
-		body("weightVisible")
-			.optional()
-			.isBoolean()
-			.withMessage("Weight visible must be a boolean"),
+		// Note: profilePublic and weightVisible are checkboxes that send "on" or are absent
+		// The controller handles the transformation to boolean
 	];
 
 	/**

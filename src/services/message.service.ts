@@ -42,7 +42,7 @@ export class MessageService {
 	 */
 	static async getUserConversations(
 		userId: string,
-		teamOnly: boolean = false
+		teamOnly: boolean = false,
 	): Promise<ConversationWithDetails[]> {
 		const conversations = await prisma.conversation.findMany({
 			where: {
@@ -95,9 +95,10 @@ export class MessageService {
 
 		// Calculate unread count for each conversation
 		const conversationsWithUnread = await Promise.all(
-			conversations.map(async (conv: typeof conversations[number]) => {
+			conversations.map(async (conv: (typeof conversations)[number]) => {
 				const participant = conv.participants.find(
-					(p: typeof conv.participants[number]) => p.userId === userId
+					(p: (typeof conv.participants)[number]) =>
+						p.userId === userId,
 				);
 				const lastReadAt = participant?.lastReadAt || new Date(0);
 
@@ -118,7 +119,7 @@ export class MessageService {
 					...conv,
 					unreadCount,
 				};
-			})
+			}),
 		);
 
 		return conversationsWithUnread;
@@ -129,7 +130,7 @@ export class MessageService {
 	 */
 	static async getOrCreateDirectConversation(
 		userId1: string,
-		userId2: string
+		userId2: string,
 	): Promise<Conversation> {
 		// Look for existing DM conversation between these two users
 		const existing = await prisma.conversation.findFirst({
@@ -181,7 +182,7 @@ export class MessageService {
 		name: string,
 		creatorId: string,
 		participantIds: string[],
-		teamId?: string
+		teamId?: string,
 	): Promise<Conversation> {
 		// Ensure creator is in participants
 		const allParticipants = new Set([creatorId, ...participantIds]);
@@ -218,7 +219,7 @@ export class MessageService {
 	 */
 	static async getConversation(
 		conversationId: string,
-		userId: string
+		userId: string,
 	): Promise<ConversationWithDetails | null> {
 		const conversation = await prisma.conversation.findFirst({
 			where: {
@@ -275,7 +276,7 @@ export class MessageService {
 	static async getMessages(
 		conversationId: string,
 		userId: string,
-		options: { limit?: number; before?: string } = {}
+		options: { limit?: number; before?: string } = {},
 	): Promise<MessageWithSender[]> {
 		const { limit = 50, before } = options;
 
@@ -331,7 +332,7 @@ export class MessageService {
 		conversationId: string,
 		senderId: string,
 		content: string,
-		mediaUrls?: string[]
+		mediaUrls?: string[],
 	): Promise<MessageWithSender> {
 		// Verify sender is a participant and get all participants
 		const conversation = await prisma.conversation.findFirst({
@@ -408,7 +409,7 @@ export class MessageService {
 				sender: message.sender,
 				createdAt: message.createdAt,
 			},
-			conversationName
+			conversationName,
 		);
 
 		return message;
@@ -420,7 +421,7 @@ export class MessageService {
 	static async editMessage(
 		messageId: string,
 		userId: string,
-		newContent: string
+		newContent: string,
 	): Promise<Message | null> {
 		const message = await prisma.message.findFirst({
 			where: {
@@ -448,7 +449,7 @@ export class MessageService {
 	 */
 	static async deleteMessage(
 		messageId: string,
-		userId: string
+		userId: string,
 	): Promise<boolean> {
 		const message = await prisma.message.findFirst({
 			where: {
@@ -475,7 +476,7 @@ export class MessageService {
 	 */
 	static async markAsRead(
 		conversationId: string,
-		userId: string
+		userId: string,
 	): Promise<void> {
 		await prisma.conversationParticipant.updateMany({
 			where: {
@@ -489,42 +490,12 @@ export class MessageService {
 	}
 
 	/**
-	 * Get total unread message count for a user
-	 */
-	static async getTotalUnreadCount(userId: string): Promise<number> {
-		const conversations = await prisma.conversationParticipant.findMany({
-			where: { userId },
-			select: {
-				conversationId: true,
-				lastReadAt: true,
-			},
-		});
-
-		let totalUnread = 0;
-
-		for (const conv of conversations) {
-			const lastReadAt = conv.lastReadAt || new Date(0);
-			const unreadCount = await prisma.message.count({
-				where: {
-					conversationId: conv.conversationId,
-					createdAt: { gt: lastReadAt },
-					senderId: { not: userId },
-					deletedAt: null,
-				},
-			});
-			totalUnread += unreadCount;
-		}
-
-		return totalUnread;
-	}
-
-	/**
 	 * Search for users to start a conversation with
 	 */
 	static async searchUsers(
 		query: string,
 		currentUserId: string,
-		limit = 10
+		limit = 10,
 	): Promise<Pick<User, "id" | "username" | "avatarUrl">[]> {
 		return prisma.user.findMany({
 			where: {
@@ -551,7 +522,7 @@ export class MessageService {
 	 */
 	static getConversationDisplayName(
 		conversation: ConversationWithDetails,
-		currentUserId: string
+		currentUserId: string,
 	): string {
 		if (conversation.isGroup && conversation.name) {
 			return conversation.name;
@@ -559,7 +530,7 @@ export class MessageService {
 
 		// For DMs, find the other participant
 		const otherParticipant = conversation.participants.find(
-			(p) => p.user.id !== currentUserId
+			(p) => p.user.id !== currentUserId,
 		);
 
 		return otherParticipant?.user.username || "Unknown User";
@@ -572,7 +543,7 @@ export class MessageService {
 	static async getOrCreateTeamConversation(
 		teamId: string,
 		teamName: string,
-		memberIds: string[]
+		memberIds: string[],
 	): Promise<ConversationWithDetails> {
 		// Look for existing team conversation
 		let conversation = await prisma.conversation.findFirst({
@@ -675,7 +646,7 @@ export class MessageService {
 	 */
 	static async syncTeamConversationParticipants(
 		teamId: string,
-		currentMemberIds: string[]
+		currentMemberIds: string[],
 	): Promise<void> {
 		const conversation = await prisma.conversation.findFirst({
 			where: {
@@ -692,7 +663,7 @@ export class MessageService {
 		}
 
 		const existingParticipantIds = conversation.participants.map(
-			(p) => p.userId
+			(p) => p.userId,
 		);
 		const memberIdSet = new Set(currentMemberIds);
 		const existingIdSet = new Set(existingParticipantIds);
@@ -702,7 +673,7 @@ export class MessageService {
 
 		// Find members to remove (in conversation but not in team)
 		const toRemove = existingParticipantIds.filter(
-			(id) => !memberIdSet.has(id)
+			(id) => !memberIdSet.has(id),
 		);
 
 		// Add new participants
@@ -734,7 +705,7 @@ export class MessageService {
 	 */
 	static async getConversationUnreadCount(
 		conversationId: string,
-		userId: string
+		userId: string,
 	): Promise<number> {
 		const participant = await prisma.conversationParticipant.findFirst({
 			where: {

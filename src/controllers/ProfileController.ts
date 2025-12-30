@@ -90,10 +90,6 @@ export class ProfileController {
 			.optional()
 			.isBoolean()
 			.withMessage("Weight visible must be a boolean"),
-		body("theme")
-			.optional()
-			.isIn(["light", "dark"])
-			.withMessage("Invalid theme"),
 	];
 
 	/**
@@ -189,7 +185,8 @@ export class ProfileController {
 			} = req.body;
 
 			// Handle avatar upload
-			const file = (req as unknown as { file?: { filename: string } }).file;
+			const file = (req as unknown as { file?: { filename: string } })
+				.file;
 			let avatarUrl = currentUser.avatarUrl;
 
 			if (file) {

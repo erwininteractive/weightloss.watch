@@ -10,15 +10,12 @@ router.use(webAuthenticate);
 // Web routes
 router.get("/", MessageController.listTeamFeeds);
 
-// API endpoints (must be before :conversationId routes)
-router.get("/unread-count", MessageController.getUnreadCount);
-
 // Team chat endpoints
 router.get("/team/:teamId", MessageController.getTeamConversation);
 router.post(
 	"/team/:teamId",
 	MessageController.teamMessageValidation,
-	MessageController.sendTeamMessage
+	MessageController.sendTeamMessage,
 );
 router.post("/team/:teamId/read", MessageController.markTeamAsRead);
 
@@ -27,7 +24,7 @@ router.get("/:conversationId", MessageController.showConversation);
 router.post(
 	"/:conversationId",
 	MessageController.sendMessageValidation,
-	MessageController.sendMessage
+	MessageController.sendMessage,
 );
 router.post("/:conversationId/read", MessageController.markAsRead);
 
@@ -35,12 +32,12 @@ router.post("/:conversationId/read", MessageController.markAsRead);
 router.put(
 	"/:conversationId/:messageId",
 	MessageController.editMessageValidation,
-	MessageController.editMessage
+	MessageController.editMessage,
 );
 router.delete(
 	"/:conversationId/:messageId",
 	MessageController.messageActionValidation,
-	MessageController.deleteMessage
+	MessageController.deleteMessage,
 );
 
 export default router;
